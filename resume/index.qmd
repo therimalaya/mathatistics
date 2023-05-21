@@ -1,0 +1,49 @@
+---
+page-layout: full
+---
+
+```{r}
+#| echo: false
+library(htmltools)
+library(yaml)
+library(purrr)
+autoload("%>%", "magrittr")
+```
+
+
+```{r}
+#| echo: false
+data <- read_yaml("cv-data.yml")
+```
+
+
+::: {.panel-sidebar .resume-sidebar}
+
+{{< include partials/_sidebar.qmd >}}
+
+{{< include partials/_contact.qmd >}}
+
+:::
+
+::: {.panel-fill .panel-tabset .resume-body}
+
+## Experiences
+
+{{< include partials/_experiences.qmd >}}
+
+## Education
+
+{{< include partials/_education.qmd >}}
+
+## Skills
+
+{{< include partials/_skills.qmd >}}
+
+## Language, Interests & Hobbies
+
+{{< include partials/_language.qmd >}}
+
+{{< include partials/_hobbies.qmd >}}
+
+
+:::

@@ -1,0 +1,18 @@
+
+![](../images/profile.jpg){.rectangle width="100%"}
+
+::: {.title .h1}
+Raju Rimal
+:::
+
+::: {.lead .subtitle}
+Statistician/ Data scientist
+:::
+
+::: {.description .resume-address}
+
+:::
+
+::: {.description style="display:none;"}
+  Passionate about data analysis and visualisations with strong technical and interpersonal skills for working in a team. Searching career in the intersection of statistics, web and programming.
+:::

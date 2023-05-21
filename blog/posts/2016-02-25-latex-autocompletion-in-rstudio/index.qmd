@@ -1,0 +1,147 @@
+---
+title: LaTeX autocompletion in RStudio
+descripion: LaTeX autocompletion or any autocompletion can be triggred in RStudio
+slug: latex-autocomplete-rstudio
+author: therimalaya
+type: post
+date: 2016-02-25
+categories:
+  - Knitr
+  - LaTeX
+  - R IDE
+  - RStudio
+tags:
+  - knitr
+  - latex autocompletion
+  - rstat
+  - rstudio
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(comment = NA, fig.height = 6,
+                      fig.align = 'center',
+                      warning = FALSE, message = FALSE)
+```
+
+
+When I was working on my Masters thesis, I needed the latex autocompletion feature in Rsudio, but could not find it anywhere. There is no option to create custom snippet either. But recently I found some basic and necessary auto-completion for latex is available in RStudio. Following are some of the these you want to use, but remember to press `Shift + Tab` for autocomplete. Further this will only work on `sweave` or `knitr` file only, which is pretty obvious. But we can always create snippets for `rmarkdown` documents.
+
+## Section {.keyword-title} 
+<p id = "tex-keyword">keyword: `sec`</p>
+
+```tex
+\section{section name}
+\label{sec:section name}
+``` 
+
+## Part  {.keyword-title} 
+<p id = "tex-keyword">keyword: `part`</p>
+
+```tex
+\part{part name} % (fold)
+\label{prt:part name}
+
+% part part name (end) 
+``` 
+
+## Chapter  {.keyword-title} 
+<p id = "tex-keyword">keyword: `chap`</p>
+
+```tex
+\chapter{chapter name}
+\label{cha:chapter name}
+``` 
+
+## Equation  {.keyword-title} 
+<p id = "tex-keyword">keyword: `eq`</p>
+
+```tex
+\begin{equation}
+  
+\end{equation}
+``` 
+
+## Figure  {.keyword-title} 
+<p id = "tex-keyword">keyword: `fig`</p>
+
+```tex
+\begin{figure}
+\begin{center}
+    \includegraphics[scale=]{Figures/}
+\end{center}
+\caption{}
+\label{fig:}
+\end{figure}
+``` 
+
+## Tabular  {.keyword-title} 
+<p id = "tex-keyword">keyword: `tab`</p>
+
+```tex
+\begin{tabular}{c}
+
+\end{tabular}
+``` 
+
+## Matrix  {.keyword-title} 
+<p id = "tex-keyword">keyword: `mat`</p>
+
+```tex
+\begin{p/b/v/V/B/smallmatrix}
+  
+\end{p/b/v/V/B/smallmatrix}
+``` 
+
+## Description List  {.keyword-title} 
+<p id = "tex-keyword">keyword: `desc`</p>
+
+```tex
+\begin{description}
+  \item[] 
+\end{description}
+``` 
+
+## Enumerate List  {.keyword-title} 
+<p id = "tex-keyword">keyword: `enum`</p>
+
+```tex
+\begin{enumerate}
+  \item 
+\end{enumerate}
+``` 
+
+## General Environment  {.keyword-title} 
+<p id = "tex-keyword">keyword: `begin`</p>
+
+```tex
+\begin{env}
+  
+\end{env}
+``` 
+
+## Figure Reference  {.keyword-title} 
+<p id = "tex-keyword">keyword: `figure`</p>
+
+```tex
+Figure~\ref{fig:}
+``` 
+
+## Table Reference  {.keyword-title} 
+<p id = "tex-keyword">keyword: `table`</p>
+
+```tex
+Table~\ref{tab:}
+``` 
+
+## Citation  {.keyword-title} 
+<p id = "tex-keyword">keyword: `cite`</p>
+
+```tex
+\cite[]{}
+``` 
+
+Apart from these basic formatting options such as `bf`, `sc`, `it` and `tt` will also work.
+
+## Update:
+If you install daily-update of Rstudio, you will get TeX snippets support for both `TeX` and `Rnw` files. This has opened all the doors for features discussed here.

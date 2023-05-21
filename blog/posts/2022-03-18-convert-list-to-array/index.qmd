@@ -1,0 +1,61 @@
+---
+title  : Convert list of array/matrix into an array in R
+slug   : convert-list-of-array-matrix-into-an-array-in-r
+author : therimalaya
+date   : 2022-03-18
+categories:
+  - R
+tags:
+  - rstat
+  - programming
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(comment = NA, warning = FALSE, fig.align = "center", fig.asp = 0.7, out.width = "100%")
+```
+
+Array and matrix/tables are data structures in R with same data types such as numeric, string or boolean. This examples show how to convert a list of vector/matrix/array into a multi-dimentional array so that it will become easier to aggregate them in particular dimension. We can also do this converting everything into data frame but this way can be useful sometimes and is worth learning.
+
+Let us use a dataset already available in R and convert that into a list of tables or matrix. Here I will use `Titanic` dataset and convert it into a nested list of array using `purrr` package.
+
+```{r}
+library(purrr)
+titanic_list <- array_tree(Titanic, 4:3)
+str(titanic_list)
+```
+
+Following function will convert this nested array into a multi-dimensional array.
+
+```{r}
+list2array <- function(list, dnames.name = NULL) {
+  l2a <- function(l) {
+    do.call(abind::abind, append(l, list(rev.along = 0)))
+  }
+  while (is.list(list[[1]])) {
+    list <- map(list, l2a)
+  }
+  out <- l2a(list)
+  if (!is.null(dnames.name)) names(dimnames(out)) <- dnames.name
+  return(out)
+}
+```
+
+Now, testing the function we just created.
+
+```{r}
+NewTitanic <- list2array(titanic_list, dnames.name = names(dimnames(Titanic)))
+str(NewTitanic)
+```
+
+```{r}
+identical(Titanic, as.table(NewTitanic))
+```
+
+
+
+
+
+
+
+
+

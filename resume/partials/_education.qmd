@@ -1,0 +1,89 @@
+### Dissertations and Publications
+
+```{r}
+#| echo: false
+masters_pub <- data$education$publication[["masters"]]
+phd_pub <- data$education$publication[["phd"]]
+```
+
+#### Thesis
+
+```{r}
+#| results: asis
+#| echo: false
+walk(phd_pub$thesis, function(item){
+  div(
+    class = c("edu-item", "style-1"),
+    item$bib %>% p(class = "edu-item-head"),
+    item$url %>% a(href = ".")
+  ) %>% print()
+})
+
+walk(masters_pub$thesis, function(item){
+  div(
+    class = c("edu-item", "style-1"),
+    item$bib %>% p(class = "edu-item-head"),
+    item$url %>% a(href = ".")
+  ) %>% print()
+})
+```
+
+#### Papers
+
+```{r}
+#| results: asis
+#| echo: false
+walk(phd_pub$papers, function(item){
+  div(
+    class = c("edu-item", "style-1"),
+    item$bib %>% p(class = "edu-item-head"),
+    item$url %>% a(href = ".")
+  ) %>% print()
+})
+
+```
+
+---
+
+### Conference Participation
+
+```{r}
+#| results: asis
+#| echo: false
+conf <- data$education$conferences
+walk(conf, function(item) {
+  div(
+    class = c("edu-item", "style-2"),
+    item$title %>% h5(class = "edu-item-head"),
+    item$name %>% p(class = "edu-item-body"),
+    paste(
+      item$location, 
+      ifelse(
+        item$type == "Poster", 
+        paste(item$type, "presentation"),
+        item$type
+      ), 
+      sep = ", "
+    ) %>% p(class = "edu-item-body")
+  ) %>% print()
+})
+```
+
+### Academic Qualifications
+
+```{r}
+#| results: asis
+#| echo: false
+acad <- data$education$academic
+walk(acad, function(item) {
+  div(
+    class = c("edu-item", "style-3"),
+    item$degree %>% h5(class = "edu-item-head"),
+    item$institution %>% p(class = "edu-item-body"),
+    item$address %>% p(class = "edu-item-body"),
+    paste(item$from, item$to, sep = "--") %>% 
+      p(class = "edu-item-body"),
+    item$extra %>% p(class = "edu-item-extra")
+  ) %>% print()
+})
+```

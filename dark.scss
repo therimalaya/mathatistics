@@ -1,0 +1,43 @@
+/*-- scss:defaults --*/
+
+// Base document colors
+$navbar-bg: #212527;
+$body-bg: #212527EF;
+$body-color: white;
+$link-color: #75AADB;
+
+// Code blocks
+$code-block-bg-alpha: -.8;
+
+// Resume page
+.quarto-dark {
+
+  .panel-sidebar {
+      background: inherit!important;
+      color: inherit!important;
+
+      a, i {
+        color: skyblue!important;
+      }
+  }
+
+  .panel-fill {
+      .panel-tabset {
+        .nav-tabs {
+          border-bottom-color: #dee2e655;
+          .nav-item {
+            a {
+              color: skyblue;
+            }
+            a.active {
+              color: inherit!important;
+              border-color: #dee2e655 #dee2e655 #212527 ;
+              background-color: #21252777;
+            }
+        }
+      }
+    }
+  }
+
+}
+

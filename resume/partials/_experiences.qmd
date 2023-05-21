@@ -1,0 +1,117 @@
+### Research
+
+```{r}
+#| results: asis
+#| echo: false
+research <- data$experiences[1]$research
+walk(research, function(item) {
+  div(
+    paste(item$position, item$institution, sep = ", ") %>% 
+      h4(class="cv-item-head"),
+    paste(item$faculty, item$department, sep = ", ") %>% 
+      p(class="cv-item-body"),
+    item$address %>% 
+      p(class="cv-item-body"),
+    paste(item$from, item$to, sep = "--") %>% 
+      p(class="cv-item-body"),
+    item$extra %>% p(class="cv-item-extra"),
+    hr(),
+    class = c("exp-item", "style-1")
+  ) %>%
+  print()
+})
+```
+
+### Consulting & Advising
+
+```{r}
+#| results: asis
+#| echo: false
+consultation <- data$experiences$consultation
+walk(consultation, function(item) {
+  div(
+    paste(item$position, item$institution, sep = ", ") %>% 
+      h4(class="cv-item-head"),
+    paste(item$faculty, item$department, sep = ", ") %>% 
+      p(class="cv-item-body"),
+    item$address %>% 
+      p(class="cv-item-body"),
+    paste(item$from, item$to, sep = "--") %>% 
+      p(class="cv-item-body"),
+    item$extra %>% p(class="cv-item-extra"),
+    hr(),
+    class = c("exp-item", "style-1")
+  ) %>%
+  print()
+})
+```
+
+```{r}
+#| echo: false
+sub_items <- function(items) {
+  out <- map(items, function(item) {
+    div(class = "cv-subitem") %>% 
+      tagAppendChildren(
+        item$name %>% h5(class = "cv-subitem-head"),
+        item$period %>% p(class = "cv-subitem-body"),
+        item$extra %>% p(class = "cv-subitem-extra")
+      )
+  })
+  do.call(tagList, out)
+} 
+```
+### Teaching
+
+```{r}
+#| results: asis
+#| echo: false
+teaching <- data$experiences[['teaching']]
+out <- map(teaching, function(item) {
+  div(
+    class = c("exp-item", "style-2"),
+    item$name %>% h4(class="cv-item-head"),
+    item$address %>% p(class="cv-item-body"),
+    item$courses %>% sub_items(),
+    hr()
+  )
+})
+out[[1]]
+```
+
+### Teaching Assistant
+
+```{r}
+#| results: asis
+#| echo: false
+ta <- data$experiences[["teaching-assistant"]]
+map(ta, function(item) {
+  div(
+    class = c("exp-item", "style-2", "compact"),
+    item$name %>% h4(class="cv-item-head"),
+    item$address %>% p(class="cv-item-body"),
+    item$courses %>% sub_items(),
+    item$extra %>% p(class = "cv-item-extra"),
+    hr()
+  )
+}) %>% pluck(1)
+```
+
+### IT Support
+
+```{r}
+#| results: asis
+#| echo: false
+its <- data$experiences[["it-support"]]
+# position <- its %>% map_chr(pluck, "position") %>% unique()
+# position %>% h4(class = "cv-item-head") %>% print()
+
+map(its, function(item) {
+  div(
+    class = c("exp-item", "style-3"),
+    item$institution %>% p(class="cv-item-body"),
+    paste(item$from, item$to, sep = "–") %>% 
+      p(class = "cv-item-body"),
+    hr()
+  )
+}) %>% tagList()
+```

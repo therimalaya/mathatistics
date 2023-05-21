@@ -1,0 +1,269 @@
+name: Raju Rimal
+photo: therimalaya-cropped.jpg
+# address: |
+#   Amtmand Breders Gate 3,
+#   3045, Drammen
+#   Norway
+contact:
+  phone: +47 99884369
+  email:
+    - rimalraju@hotmail.com
+    - raju.rimal@medisin.uio.no
+  website:
+    - https://mathatistics.com
+social:
+  - facebook:
+      name: therimalaya
+      url: "https://facebook.com/therimalaya"
+  - twitter:
+      name: mathatistics
+      url: ""
+  - linkedin:
+      name: therimalaya
+      url: ""
+certificate:
+  - Driving licence class B
+experiences:
+  research:
+    - institution: University of Oslo
+      faculty: Faculty of Medicine
+      department: Department of Biostatistics
+      address: Oslo, Norway
+      position: Postdoctoral Fellow
+      from: Nov 2020
+      to: Now
+      extra: |
+        Analyzing the trend of melanoma incidence and 
+        survival by tumour thickness in Norway overall 
+        and within different prognostic factors such as 
+        sex, age, anatomic site, and melanoma subtypes.
+    - institution: Norwegian University of Life Sciences
+      faculty: Faculty of Chem., Biotech. and Food Science
+      department: ""
+      address: Ås, Norway
+      position: Ph.D. Candidate
+      from: Aug. 2015
+      to: Oct. 2019
+      extra: |
+        Developing a versatile tool for simulating 
+        multi-response data from a linear model.
+  consultation:
+    - institution: Norwegian University of Life Sciences
+      faculty: Cenral Adminstration
+      department: ""
+      address: Ås, Norway
+      position: Senior Consultant
+      from: Nov. 2019
+      to: May. 2020
+      extra: |
+        Mapping the research works of NMBU to the SDG goals of 
+        UN is the primary objective of this project. 
+        Creating web-application from scratch and analysing & 
+        visualizing the collected data has been an exciting 
+        experience.
+    - institution: Norwegian University of Life Sciences
+      faculty: "Learning Center"
+      department: ""
+      address: Ås, Norway
+      position: Consultant
+      from: Nov. 2016
+      to: Mar. 2018
+      extra: |
+        Providing statistical advice and tips about 
+        data analysis and preparation to the bachelors, 
+        masters and other PhD students was both exciting 
+        and challenging job where I encountered problems 
+        from many disciplines such as animal sciences, 
+        plant sciences and econometrics.
+  teaching:
+    institution1:
+      name: Norwegian University of Life Sciences
+      address: Ås, Norway
+      extra: ""
+      courses:
+        - name: Theoretical Statistics II
+          period: Spring 2020
+          extra: |
+            Planning and perparation of the complete course,
+            prepare exercises, assignments and examination.
+        - name: Applied Methods in Statistics
+          period: Autumn 2018
+          extra: |
+            Involved in lecturing the part of the course including
+            classification and descrimination.
+        - name: Design of Experiment and Analysis of Variance
+          period: August 2017
+          extra: |
+            Involved in lecturing the part of the course including
+            classification and descrimination.
+  teaching-assistant:
+    institution1:
+      name: Norwegian University of Life Sciences
+      address: Ås, Norway
+      extra: |
+        Working closely with students and preparing exercises for the course 
+        helped me not only to understand and solve students’ problems but also 
+        gave me ideas on how to construct lectures, exercises and other activities 
+        for future courses. The experience has also helped me to clearly 
+        understand many basic statistical concepts.
+      courses:
+        - name: Applied Methods in Statistics
+          period: Autumn of 2016, 2017, and 2018
+        - name: Regression Analysis
+          period: January of 2014, 2016, and 2017
+        - name: Design of Experiment and Analysis of Variance
+          period: August of 2013, 2015, 2016, and 2017
+  it-support:
+    - institution: Election Commission Nepal
+      position: Computer Operator
+      from: Aug 2011
+      to: July 2012
+    - institution: Postal Service Department, Nepal
+      position: Computer Operator
+      from: Mar 2005
+      to: Aug 2011
+education:
+  publications:
+    masters:
+      thesis:
+        - bib: |
+            Rimal, Raju. _Evaluation of models for predicting the average monthly Euro versus Norwegian krone exchange 
+            rate from financial and commodity information._ MS thesis. Norwegian University of Life Sciences, Ås, 2014.
+          url: https://doi.org/10.13140/rg.2.1.1145.4886
+    phd:
+      papers:
+        - bib: |
+            Rimal, Raju, Almøy Trygve, and Sæbø Solve. A tool for simulating multi-response linear model data. Chemometrics 
+            and Intelligent Laboratory Systems 176 (2018): 1-10.
+          url: https://doi.org/10.1016/j.chemolab.2018.02.009
+        - bib: |
+            Helland, Inge S., Sæbø, solve, Almøy, Trygve and Rimal, Raju, 2018. Model and estimators for partial least 
+            squares regression. Journal of Chemometrics, 32(9), p.e3044.
+          url: https://doi.org/10.1002/cem.3044
+        - bib: |
+            Rimal, R., Almøy, T., & Sæbø, S. (2019). Comparison of multi-response prediction methods. Chemometrics 
+            and Intelligent Laboratory Systems, 190, 10-21.
+          url: https://doi.org/10.1016/j.chemolab.2019.05.004
+        - bib: |
+            Rimal, Raju, Almøy, Trygve, and Sæbø Solve. 2019. Comparison of multi-response estimation methods 
+            Chemometrics and Intelligent Laboratory Systems 205 (2020) 104093
+          url: https://doi.org/10.1016/j.chemolab.2020.104093
+      thesis:
+        - bib: |
+            Rimal, Raju. Exploration of Multi-Response Multivariate Methods PhD thesis. 
+            Norwegian University of Life Sciences, Ås, 2019.
+          url: https://therimalaya.github.io/Thesis/Thesis.pdf
+  conferences:
+    - name: NOFE Conference 2021
+      location: Bergen, Norway
+      title: Long-term Trend on Tumour Thickness of Melanoma in Norway
+      period: Nov 3-4, 2021
+      type: Presentation
+    - name: Tenth World Congress of Melanoma in Conjunction with 17th EADO Congress
+      location: Virtual (Online)
+      title: Long-term trend in melanoma tumour thickness in Norway
+      period: Apr 15-17, 2021
+      type: Poster
+    - name: The 26th Nordic Conference in Mathematical Statistics (NordStat 2016)
+      location: Copenhagen, Denmark
+      title: "Simrel-M: Simulation tool for multi-response linear model data"
+      period: Jun 27-30, 2016
+      type: Poster
+    - name: The 19th national meeting of statistics (Norske Statistikermøtet)
+      location: Fredrikstad, Norway
+      title: "Simrel-M: A simulation tool and its application"
+      period: Jul 12-15, 2017
+      type: Presentation
+    - name: UseR! 2018 Conference
+      location: Brisbane, Australia
+      title: A versatile tool for simulating linear model data
+      period: Jul 10-13, 2018
+      type: Presentation
+    - name: Scandinavian Symposium on Chemometrics (SSC16) Conference
+      location: Oslo, Norway
+      title: A comparison of multi-response prediction methods
+      period: Jun 17-20, 2019
+      type: Presentation
+  academic:
+    - institution: Norwegian University of Life Sciences
+      address: Ås, Norway
+      degree: Doctor of Philosophy in Applied Statistics
+      from: 2015
+      to: 2019
+      grade: ""
+      courses: ""
+      extra: ""
+    - institution: Norwegian University of Life Sciences
+      address: Ås, Norway
+      degree: Masters in Bioinformatics and Applied Statistics
+      from: 2012
+      to: 2015
+      grade: ""
+      courses: ""
+      extra: ""
+    - institution: Tribhuwan University, Central Department of Statistics
+      address: Kathmandu, Nepal
+      degree: Masters in Statistics
+      from: 2007
+      to: 2009
+      grade: First Division (83.8%)
+      courses: ""
+      extra: ""
+    - institution: Tribhuwan University, Tri-candra Campus
+      address: Kathmandu, Nepal
+      degree: Bachelors in Physics and Statistics
+      from: 2003
+      to: 2007
+      grade: First Division (65.6%)
+      courses: ""
+      extra: ""
+skills:
+  it:
+    overview: Advanced user of R and comfortable with Matlab and Python in most situations.
+    highlight:
+      - Data cleaning and wrangling
+      - Interactive shiny application with R
+      - Reproducible workflow
+      - Version control and testing
+      - Data visualization
+      - Web development and deployment
+    competency:
+      advanced: R, Python, LaTeX, Knitr, Rmarkdown, Web Technologies, Microsoft Office, Stata
+      comfortable: Git, JavaScript, Minitab, Matlab, Docker, SQL, Bash, Linux, D3, Graphics Design
+      elementary: Julia, SPSS, SVG
+  scientific:
+    highlight:
+      - Model building and experimental design
+      - Dimension reduction and machine learning
+      - Basic epidemiology and survival analysis
+      - Data integration
+  interpersonal:
+    highlight:
+      - Organized, motivated and passionate
+      - Good communication skill
+      - Self competent and has team spirit
+      - Friendly and helpful nature
+hobbies: |
+  I like hiking, cycling, and photography. In my free time I also play lego and make crafts together with my son.
+  I like programming and like to explore new programming language
+languages:
+  - Nepali:
+      Reading: Native
+      Writing: Native
+      Speaking: Native
+      Listening: Native
+  - English:
+      Reading: Excellent
+      Writing: Excellent
+      Speaking: Excellent
+      Listening: Excellent
+  - Hindi:
+      Reading: Very Good
+      Writing: Good
+      Speaking: Good
+      Listening: Excellent
+  - Norwegian:
+      Reading: Novice (A2)
+      Writing: Novice (A2)
+      Speaking: Novice (A2)
+      Listening: Novice (A2)

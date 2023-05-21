@@ -1,0 +1,75 @@
+### IT skills
+
+```{r}
+#| echo: false
+#| result: asis
+it <- data$skills$it
+it$overview %>% p(class = "skills-item-body")
+```
+
+::: columns
+::: column
+
+```{r}
+#| echo: false
+#| result: asis
+div(
+  class = "col",
+  imap(it$competency, function(items, level) {
+    div(
+      level %>% strong() %>% p(),
+      items %>% p()
+    )
+  })
+)
+```
+
+:::
+::: column
+
+```{r}
+#| echo: false
+#| result: asis
+div(
+  class = "col",
+  map(it$highlight, tags$li) %>% 
+    tags$ul()
+)
+```
+:::
+:::
+
+
+
+::: columns
+::: column
+
+### Scientific skills
+
+
+```{r}
+#| echo: false
+#| result: asis
+scientific <- data$skills$scientific
+div(
+  class = "col",
+  map(it$highlight, tags$li) %>% tags$ul()
+)
+```
+:::
+::: column
+
+### Interpersonal skills
+
+```{r}
+#| echo: false
+#| result: asis
+interpersonal <- data$skills$interpersonal
+div(
+  class = "col",
+  map(it$highlight, tags$li) %>% tags$ul()
+)
+```
+
+:::
+:::

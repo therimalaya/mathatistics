@@ -1,0 +1,30 @@
+---
+title: "Blog"
+subtitle: "A window of my learning experience"
+listing:
+  template: listing.ejs
+  contents: blog
+  sort: "date desc"
+  type: default
+  categories: numbered
+  sort-ui: false
+  filter-ui: false
+  date-format: long
+  fields: 
+    - author
+    - date
+    - reading-time
+    - title
+    - subtitle
+page-layout: full
+title-block-banner: false
+comments: false
+fontsize: 1.1em
+knitr: 
+  opts_chunk:
+    collapse: true
+---
+
+
+
+

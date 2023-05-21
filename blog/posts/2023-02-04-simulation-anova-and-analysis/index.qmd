@@ -1,0 +1,484 @@
+---
+title: "Simulating data for ANOVA similar to existing dataset for analysis"
+author: Raju Rimal
+date: "`r Sys.Date()`"
+draft: true
+tags:
+  - Statistics
+  - ANOVA
+---
+
+Simulating data is used in education and research and has been an helpful tool
+for testing, comparing and understanding concepts in practical and applied 
+setting.
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  comment = NA,
+  out.width = "100%",
+  dev = "svg"
+)
+library(data.table)
+library(purrr)
+library(ggplot2)
+
+ggplot2::theme_set(ggthemes::theme_few() + theme(
+  panel.grid = element_line(color = "#f0f0f0")
+))
+
+set.seed(124)
+```
+
+
+Often we Analysis of Variance (ANOVA) to analyze the variances to find if 
+different cases results in similar outcome and if the difference is significant. 
+Following are some simple examples,
+
+- The effect of different diets on growth of fishes
+- Comparing the height of three different species of a plant
+- Type of flour used for baking a bread
+
+These are some common examples where in some cases data are collected by setting 
+up an experiment and in other cases they are collected through sampling. 
+This article tries to explain how the ANOVA analyze the variance and in what 
+situation are they significant throught both simulated and real data.
+
+Consider the following model with $i=3$ groups and $j=n$ observations,
+
+$$y_{ij} = \mu + \tau_i + \varepsilon_{ij}, \; i = 1, 2, 3 
+\texttt{ and } j = 1, 2, \ldots n$$
+
+here, $\tau_i$ is the effect corresponding to group $i$ and 
+$\varepsilon_{ij} \sim \mathrm{N}(0, \sigma^2)$, the usual assumption of 
+linear model. Simulation example below describe it in details.
+
+# Simulation Example
+This example simulates 3 datasets within each of them has 3 groups with
+with their respective mean and standard deviation. These datasets tries to 
+replicate the `USArrest` dataset available in `dataset` package in R. The 
+simulation design is as follows,
+
+```{r, echo = TRUE, class.source = c("bg-info", "folded")}
+sim_design <- data.table(
+  Illitracy = factor(
+    rep(c(1, 2, 3), 3),
+    labels = c("high", "medium", "low")
+  ),
+  Crime = factor(
+    rep(c(1, 2, 3), each = 3),
+    labels = c("Murder", "Assault", "Rape")
+  ),
+  mean = c(11, 8, 5, 214, 190, 114, 23, 21, 19),
+  sd = c(3, 4, 3, 79, 82, 55, 8, 10, 10)
+)
+
+sim_design
+```
+
+Since these data cannot contain negative values so instead of using `rnorm` 
+available in `stats` package, I will use `truncnorm` available in GitHub. There 
+are other options as well which can be used such as: ...
+
+If not installed, install the package as 
+`remotes::install_github("olafmersmann/truncnorm")` or 
+`devtools::install_github("olafmersmann/truncnorm")`.
+
+In each group let's simulate 50 observations.
+
+```{r, echo = TRUE}
+nsim <- 50
+```
+
+```{r, echo = TRUE, class.source = c("bg-info", "folded")}
+sim_data <- copy(sim_design)[, map2_df(mean, sd, ~ data.table(
+  Rate = truncnorm::rtruncnorm(
+    n = nsim, a = 0, b = Inf, mean = .x, sd = .y
+  ) %>% round()
+)), by = .(Illitracy, Crime)]
+
+sim_data
+```
+
+Lets use this simulated dataset for fitting Anova model with `Illitracy`
+as the factor (group) variable and `Rate` as the response variable 
+separately for each crime. Also make a density plot for both simulated and 
+fitted values of the `Rate` variable.
+
+## R-codes {.tabset}
+
+### Model and plot data {.tab}
+```{r, echo = TRUE, class.source = c("bg-info", "folded")}
+mdl_fit <- sim_data[, .(
+  Fit = list(lm(Rate ~ Illitracy, data = .SD))
+), by = .(Crime)][, Summary := map(Fit, summary)]
+mdl_fit[, Anova := map(Fit, anova)]
+mdl_fit[, Tukey := map(Fit, aov) %>% map(TukeyHSD)]
+
+mdl_est <- mdl_fit[, map_df(
+  .x = Summary,
+  .f = broom::tidy,
+  conf.int = TRUE
+), by = .(Crime)]
+
+mdl_fit_df <- mdl_fit[, map_df(
+  .x = Fit,
+  .f = broom::augment
+), by = .(Crime)]
+
+eff_df <- mdl_fit[, map_df(Fit, function(.fit) {
+  effects::Effect("Illitracy", .fit) %>%
+    as.data.table()
+}), by = "Crime"]
+
+tky_df <- mdl_fit[, modify_depth(Tukey, 1, "Illitracy") %>%
+  as.data.table(keep.rownames = "terms"), by = "Crime"]
+```
+
+### Density plot {.tab}
+```{r, echo = TRUE, class.source = c("bg-info", "folded")}
+density_plts <- split(sim_data, by = "Crime") %>%
+  imap(function(dta, name) {
+    ggplot(dta, aes(Rate, color = Illitracy)) +
+      geom_density(aes(linetype = "Simulated")) +
+      geom_density(
+        aes(linetype = "Fitted", x = .fitted),
+        data = mdl_fit_df[Crime == name]
+      ) +
+      geom_rug(
+        data = eff_df[Crime == name],
+        aes(x = fit)
+      ) +
+      scale_linetype_manual(
+        breaks = c("Simulated", "Fitted"),
+        values = c("solid", "dashed")
+      ) +
+      scale_color_brewer(palette = "Set1") +
+      theme(legend.position = "bottom") +
+      labs(
+        x = name,
+        y = "Density",
+        linetype = NULL
+      )
+  })
+```
+
+### Box plot {.tab}
+```{r, echo = TRUE, class.source = c("bg-info", "folded")}
+box_plts <- split(mdl_fit_df, by = "Crime") %>%
+  imap(function(dta, name) {
+    ggplot(dta, aes(Rate, Illitracy)) +
+      geom_boxplot(
+        notch = TRUE, 
+        color = "grey",
+        outlier.colour = "grey"
+      ) +
+      geom_point(
+        position = position_jitter(height = 0.25),
+        color = "grey",
+      ) +
+      geom_pointrange(
+        aes(
+          color = "Estimated",
+          xmin = lower,
+          xmax = upper,
+          x = fit
+        ),
+        data = eff_df[Crime == name]
+      ) +
+      geom_point(
+        aes(color = "True", x = mean),
+        data = sim_design[Crime == name]
+      ) +
+      scale_color_brewer(
+        name = "Mean",
+        palette = "Set1"
+      ) +
+      theme(
+        legend.position = "bottom"
+      )
+  })
+```
+
+### Posthoc plot {.tab}
+```{r, echo = TRUE, class.source = c("bg-info", "folded")}
+tky_plts <- split(tky_df, by = "Crime") %>%
+  imap(function(dta, name) {
+    ggplot(dta, aes(diff, terms)) +
+      geom_pointrange(
+        aes(xmin = lwr, xmax = upr, x = diff),
+        shape = 21,
+        fill = "whitesmoke"
+      ) +
+      geom_vline(
+        xintercept = 0,
+        linetype = "dashed",
+        color = "royalblue"
+      ) +
+      scale_color_brewer(
+        name = "Mean",
+        palette = "Set1"
+      ) +
+      labs(
+        y = "Illitracy",
+        x = "Effect difference",
+        title = "Pairwise comparison of levels of illitracy"
+      ) +
+      expand_limits(x = 0)
+  })
+```
+
+## Analysis {.tabset}
+
+### Murder {.tab .tabset}
+
+#### Distribution {.tab}
+
+```{r}
+density_plts[["Murder"]]
+```
+
+#### Fit {.tab}
+
+```{r}
+mdl_fit[Crime == "Murder", Summary][[1]]
+```
+
+#### Effects {.tab}
+
+```{r}
+box_plts[["Murder"]]
+```
+
+#### Post-hoc {.tab}
+```{r}
+tky_plts[["Murder"]]
+```
+
+### Assault {.tab .tabset}
+
+#### Distribution {.tab}
+
+```{r, out.width="100%"}
+density_plts[["Assault"]]
+```
+
+The distribution of the high and medium illitracy is similar as contrast to low 
+illitracy group in the case of assult.
+
+#### Fit {.tab}
+
+```{r}
+mdl_fit[Crime == "Assault", Summary][[1]]
+```
+
+#### Effects {.tab}
+
+```{r}
+box_plts[["Assault"]]
+```
+
+#### Post-hoc {.tab}
+```{r}
+tky_plts[["Assault"]]
+```
+
+
+### Rape {.tab .tabset}
+
+#### Distribution {.tab}
+
+```{r}
+density_plts[["Rape"]]
+```
+
+#### Fit {.tab}
+
+```{r}
+mdl_fit[Crime == "Rape", Summary][[1]]
+```
+
+#### Effects {.tab}
+
+```{r}
+box_plts[["Rape"]]
+```
+
+#### Post-hoc {.tab}
+```{r}
+tky_plts[["Rape"]]
+```
+
+# Real Data Example
+
+```{r, echo = TRUE, class.source = c("bg-info", "folded")}
+arrest <- merge.data.table(
+  as.data.table(USArrests, keep.rownames = "States"),
+  as.data.table(
+    state.x77[, "Illiteracy", drop = FALSE],
+    keep.rownames = "States"
+  ),
+  by = "States"
+)
+arrest[, UrbanPop := NULL]
+arrest <- arrest[, lapply(.SD, as.numeric), by = "States"]
+
+arrest[, Illiteracy := cut.default(
+  Illiteracy,
+  breaks = quantile(Illiteracy, c(0, 1/3, 2/3, 1)),
+  labels = c("low", "medium", "high"),
+  include.lowest = TRUE
+)]
+
+arrest <- melt.data.table(
+  data = arrest[, lapply(.SD, as.numeric), 
+    by = .(States, Illiteracy)],
+  id.vars = c("States", "Illiteracy"),
+  value.name = "Rate",
+  variable.name = "Crime"
+)
+```
+
+```{r}
+head(arrest)
+```
+
+## Results {.tabset}
+
+```{r}
+mdl_fit <- arrest[, .(
+  Fit = list(lm(Rate ~ Illiteracy, data = .SD))
+), by = .(Crime)][, Summary := map(Fit, summary)]
+mdl_fit[, Anova := map(Fit, anova)]
+mdl_fit[, Tukey := map(Fit, aov) %>% map(TukeyHSD)]
+
+mdl_est <- mdl_fit[, map_df(
+  .x = Summary,
+  .f = broom::tidy,
+  conf.int = TRUE
+), by = .(Crime)]
+
+mdl_fit_df <- mdl_fit[, map_df(
+  .x = Fit,
+  .f = broom::augment
+), by = .(Crime)]
+
+eff_df <- mdl_fit[, map_df(Fit, function(.fit) {
+  effects::Effect("Illiteracy", .fit) %>%
+    as.data.table()
+}), by = "Crime"]
+
+tky_df <- mdl_fit[, modify_depth(Tukey, 1, "Illiteracy") %>%
+  as.data.table(keep.rownames = "terms"), by = "Crime"]
+```
+
+#### Distribution {.tab}
+
+```{r, out.width="100%", fig.asp=0.5}
+ggplot(arrest, aes(Rate, color = Illiteracy)) +
+  geom_density(aes(linetype = "Simulated")) +
+  geom_density(
+    aes(linetype = "Fitted", x = .fitted),
+    data = mdl_fit_df
+  ) +
+  geom_rug(
+    data = eff_df,
+    aes(x = fit)
+  ) +
+  scale_linetype_manual(
+    breaks = c("Simulated", "Fitted"),
+    values = c("solid", "dashed")
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme(legend.position = "bottom") +
+  labs(
+    x = "Crime",
+    y = "Density",
+    linetype = NULL
+  ) +
+  facet_wrap(
+    facets = vars(Crime),
+    scales = "free"
+  )
+```
+
+#### Fit {.tab .tabset}
+
+##### Murder {.tab}
+```{r}
+mdl_fit[Crime == "Murder", Summary][[1]]
+```
+
+##### Assult {.tab}
+```{r}
+mdl_fit[Crime == "Assault", Summary][[1]]
+```
+
+##### Rape {.tab}
+```{r}
+mdl_fit[Crime == "Rape", Summary][[1]]
+```
+
+#### Effects {.tab}
+
+```{r, out.width="100%", fig.asp=0.5}
+ggplot(arrest, aes(Rate, Illiteracy)) +
+  geom_boxplot(
+    notch = FALSE,
+    color = "grey",
+    outlier.colour = "grey"
+  ) +
+  geom_point(
+    position = position_jitter(height = 0.25),
+    color = "grey",
+  ) +
+  geom_pointrange(
+    aes(
+      xmin = lower,
+      xmax = upper,
+      x = fit
+    ),
+    color = "firebrick",
+    data = eff_df
+  ) +
+  scale_color_brewer(
+    name = "Mean",
+    palette = "Set1"
+  ) +
+  theme(
+    legend.position = "bottom"
+  ) +
+  facet_wrap(facets = vars(Crime), scales = "free_x")
+```
+
+#### Post-hoc {.tab}
+```{r, out.width="100%", fig.asp=0.5}
+ggplot(tky_df, aes(diff, terms)) +
+  geom_pointrange(
+    aes(xmin = lwr, xmax = upr, x = diff),
+    shape = 21,
+    fill = "whitesmoke"
+  ) +
+  geom_vline(
+    xintercept = 0,
+    linetype = "dashed",
+    color = "royalblue"
+  ) +
+  scale_color_brewer(
+    name = "Mean",
+    palette = "Set1"
+  ) +
+  labs(
+    y = "Illiteracy",
+    x = "Effect difference",
+    title = "Pairwise comparison of levels of illiteracy"
+  ) +
+  expand_limits(x = 0) +
+  facet_wrap(facets = vars(Crime), scales = "free_x")
+```
+
+## Discussion
+
+
+

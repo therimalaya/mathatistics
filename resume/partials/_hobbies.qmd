@@ -1,0 +1,5 @@
+```{r}
+#| echo: false
+#| results: asis
+data$hobbies %>% p()
+```

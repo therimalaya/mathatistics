@@ -1,0 +1,40 @@
+::: resume-contact
+::: row
+{{< fa envelope size=lg title="Email:" >}} 
+[raju.rimal@medisin.uio.no](mailto:raju.rimal@medisin.uio.no)
+[rimalraju@hotmail.com](mailto:rimalraju@hotmail.com)
+:::
+
+::: row
+{{< fa globe size=lg title="Homepage:" >}} 
+[https://mathatistics.com](https://mathatistics.com)
+:::
+
+---
+
+::: row
+[{{< fa brands orcid size=xl title="Orcid:" >}}](https://orcid.org/0000-0001-6097-0285)
+
+[{{< fa brands twitter size=xl title="Twitter:" >}}](https://twitter.com/mathatistics)
+
+[{{< fa brands facebook size=xl title="Facebook:" >}}](https://facebook.com/mathatistics)
+
+[{{< fa brands linkedin size=xl title="LinkedIn:" >}}](https://linkedin.com/in/therimalaya)
+
+[{{< fa brands github size=xl title="GitHub:" >}}](https://github.com/therimalaya)
+
+[{{< fa brands instagram size=xl title="Instagram:" >}}](https://instagram.com/therimalaya)
+
+[{{< fa brands researchgate size=xl title="Research Gate:" >}}](https://www.researchgate.net/profile/Raju-Rimal-2)
+
+[{{< fa brands stack-overflow size=xl title="Stack Overflow:" >}}](https://stackoverflow.com/users/1987629/therimalaya)
+:::
+
+---
+
+::: row
+{{< fa id-card size=lg title="Stack Overflow:" >}}
+Driving licence class B
+:::
+
+:::

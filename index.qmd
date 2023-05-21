@@ -1,0 +1,36 @@
+---
+title: "Raju Rimal"
+subtitle: Statistician/ Data scientist
+fontsize: 1.1em
+about:
+  template: trestles 
+  image: images/profile.jpg
+  image-shape: rectangle
+  links:
+    - icon: twitter
+      text: twitter
+      href: https://twitter.com/mathatistics
+    - icon: github
+      text: Github
+      href: https://github.com/therimalaya
+    - icon: linkedin
+      text: LinkedIn
+      href: https://linkedin.com/in/therimalaya
+    - icon: globe
+      text: Homepage
+      href: https://mathatistics.com
+    - icon: envelope
+      text: Email
+      href: "mailto:raju.rimal@medisin.uio.no"
+---
+
+::: huge-cursive
+Hi,
+:::
+
+::: lead
+I am a postdoctoral fellow at University of Oslo working on analyzing melanoma incidence and survival trend in Norway. My research interest lies in the intersection of statistics, data visualization, web and programming.
+
+I live in Drammen, a beautiful city in Norway, with my wife and a son. I spend my personal time mostly cycling, hiking and taking pictures. I also like listining music and sometimes binge watching movies & serial.
+
+:::

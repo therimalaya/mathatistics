@@ -1,0 +1,313 @@
+---
+title: "Age Adjusted Rates in Epidemiology"
+author: Raju Rimal
+date: 2022-12-02T21:00:57+01:00
+draft: false
+tags:
+  - Statistics
+  - Epidemiology
+---
+
+```{r, include=FALSE}
+autoload("%>%", "magrittr")
+library(data.table)
+library(ggplot2)
+```
+
+In general, rates means how fast something is changing usually over time. In
+epidemiology uses it to describe how quickly a disese occurs in a population.
+For example, 35 cases of melanoma cases in 100,000 person per year convey a the
+sense of speed of spread of disease in that population. Incidence rate and 
+mortality rate are two examples that we will discuss further below.
+
+> In epidemiology, rate measures the frequency of occurance of an event in a 
+> given population over certain period of time[^1].
+
+Let us use melanoma as a outcome in the following discussion. Here, we can 
+calculate a crude incidence rate as,
+
+$$\mathcal{R} = \frac{\textsf{no. of melanoma cases}}{\textsf{no. of person-year}} \times \textsf{some multiplier}$$
+
+In the case of mortality rate, we can replace the numerator of above expression
+by the number of melanoma deaths.
+
+## Age-specific rate
+
+Weather to understand a broder prespecitve or to compare across population, these
+rates are often analyzed stratified by sex and age. This also helps to remove 
+the confounding effection of these factors. The incidence/mortality rate
+per age-group is usually referred to as _Age-specific rates_ where rates
+are computed for each age-groups. This is often desirable since factor `age` 
+has a strong effect on mortality and incidence of most disease especially the 
+cronic one.
+
+## Age-adjusted rate
+
+Many research articles, however presents the age-adjusted rates. Age-adjusted 
+rates are standardized (weighted) using some standard population age-structure. 
+For example, many european studies on melanoma uses european standard age
+distribution. While any reasonal studies have also used world standard population.
+Cancer registry in their reports sometimes uses age-structure of that country in
+some given year. For instance, Norway[^3] and Finland[^4] have used the their population in 
+2014 as standard population in their recent cancer report while Australia have
+used 2001 Australian population[^5].
+
+Standardized (adjusted) rates makes comparison between the population possible.
+Figure \@ref(fig:age-std) shows the difference in the age distribution between
+world population and European population. Following table are some of the
+standard population often used in the study. Further on standard popuation see 
+[`seer.cancer.gov`](https://seer.cancer.gov/stdpopulations/stdpop.19ages.html)[^6].
+
+:::: columns
+::: column
+
+```{r, echo=FALSE}
+std_pop <- copy(popEpi::stdpop18)
+std_pop[agegroup == "85", agegroup := "85+"]
+setnames(std_pop, c("Age Group", "World", "Europe", "Nordic"))
+kableExtra::kbl(std_pop, caption = "European and World standard population") %>%
+    kableExtra::kable_styling(full_width = FALSE) %>%
+    kableExtra::row_spec(1:nrow(std_pop), extra_css = "padding: 2px;")
+```
+:::
+::: column
+
+```{r, echo=FALSE}
+us2000 <- data.table(
+`Age Group` = c(
+    "00", "01-04", "05-09", "10-14", "15-19", 
+    "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54",
+    "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85+"), 
+Std.Population = c(
+    13818, 55317, 72533, 73032, 72169, 66478, 64529, 71044, 80762, 81851, 
+    72118, 62716, 48454, 38793, 34264, 31773, 26999, 17842, 15508)
+)
+us2000 %>% 
+    kableExtra::kbl(caption = "US 2000 standard population") %>%
+    kableExtra::kable_styling(full_width = FALSE) %>%
+    kableExtra::row_spec(1:nrow(us2000), extra_css = "padding: 1px;")
+```
+
+:::
+::::
+
+:::: columns
+::: column
+## Calculating age-standardized rate
+
+The age-standardized rate (ASR) is calculated as,
+
+$$\text{Age.Std. Rate} = \frac{\sum_i\mathcal{R}_i\mathcal{w}_i}{\sum_i\mathcal{w}_i}$$
+
+where, $\mathcal{w}_i$ is the weight corresponding to $i^\text{th}$ age-group in the 
+reference population.
+
+Let's explore further with an example from melanoma cases from Australia.
+
+:::
+::: column
+```{r, include=FALSE}
+data(stdpop18, package = "popEpi")
+pop_data <- copy(stdpop18)
+pop_data[, nordic := NULL]
+pop_data[, id := .I]
+
+pop_plot <- melt.data.table(
+  pop_data,
+  id.vars = c("agegroup", "id")
+)[variable == "world", value := value * -1][order(id)] %>% 
+  ggplot(aes(value, reorder(agegroup, id), fill = variable)) +
+  geom_col(width = 1, color = "#f0f0f0", size = 0.2) +
+  theme_minimal() +
+  ggthemes::scale_fill_economist(
+    labels = stringr::str_to_title
+  ) +
+  theme(
+    legend.position = "none",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_line(color = "red")
+  ) +
+  scale_x_continuous(
+    labels = abs,
+    expand = expansion()
+  ) +
+  scale_y_discrete(
+    expand = expansion()
+  ) +
+  labs(
+    x = "Number of person",
+    y = NULL,
+    fill = "Population"
+  ) +
+  annotate(
+    geom = "text",
+    x = -Inf,
+    y = Inf,
+    label = "World",
+    hjust = -0.5,
+    vjust = 1.5
+  ) +
+  annotate(
+    geom = "text",
+    x = Inf,
+    y = Inf,
+    label = "Europe",
+    hjust = 1.5,
+    vjust = 1.5
+  )
+```
+
+```{r age-std, echo=FALSE, fig.width=4, out.width="100%", dev="svg", fig.asp = 0.8, fig.cap="World and European standard population"}
+pop_plot
+```
+:::
+::::
+
+## Example
+
+The following example have used the Austrailian cancer data with 5-year 
+age-group[^2] after filtering melanoma cases from 1982 to 2018. The dataset has
+yearly count and age-specific incidence rate of melanoma for men and women.
+
+Let us use the above European standard population to find the yearly
+age-standardized incidence by sex.
+
+```{r}
+data <- fread("melanoma.csv")
+std_pop <- popEpi::stdpop18
+```
+```{r}
+data[AgeGroup %in% c("85-89", "90+"), AgeGroup := "85+"]
+setnames(std_pop, c("AgeGroup", "World", "Europe", "Nordic"))
+std_pop[AgeGroup == "85", AgeGroup := "85+"]
+std_pop[, c(2:4) := lapply(.SD, prop.table), .SDcols = 2:4]
+asp_data <- merge.data.table(data, std_pop[, .(AgeGroup, World)], by = "AgeGroup")
+asp <- asp_data[, .(AgeAdjRate = sum(ASR * World)), by = .(Year, Sex)]
+```
+```{r}
+asp[, tail(.SD, 8), by = Sex] %>%
+    dcast.data.table(
+        formula = Sex ~ Year,
+        value.var = "AgeAdjRate") %>% 
+        kableExtra::kbl(caption = paste(
+            "Age-standardized incidence rate of melanoma",
+            "Australia from 2011 to 2018"
+    )) %>% 
+    kableExtra::kable_styling(full_width = FALSE)
+```
+
+Now, let us compare the age-specific rates (crude rates) and  age-standardized
+rates with a plot,
+
+### Compare the age-specific rates and age-adjusted rates {.accordions}
+
+#### Plot {.accordion}
+```{r rate-plot, echo = FALSE, fig.asp = 0.5, fig.cap = "Age-standardized melanoma rate in Australia", dev = "svg"}
+ggplot() +
+    geom_line(
+        data = data, 
+        aes(
+            x = Year, 
+            y = ASR, 
+            group = AgeGroup,
+            color = "Crude"
+        )
+    ) +
+    geom_line(
+        data = asp,
+        aes(
+            x = Year, 
+            y = AgeAdjRate, 
+            group = 1,
+            color = "Age-adjusted"
+        )
+    ) +
+    geom_text(
+        data = data[Year == max(Year)],
+        check_overlap = TRUE,
+        size = rel(2),
+        color = "#0f0f0f",
+        aes(
+            x = Year + 2,
+            y = ASR,
+            label = AgeGroup
+        )
+    ) +
+    scale_x_continuous(breaks = scales::breaks_extended(8)) +
+    scale_y_continuous(breaks = scales::breaks_extended(8)) +
+    scale_color_manual(NULL, values = c("firebrick", "grey")) +
+    facet_grid(cols = vars(Sex)) +
+    theme_minimal() +
+    theme(
+        panel.border = element_rect(fill = NA, color = "darkgrey"),
+        legend.position = c(0, 1),
+        legend.justification = c(0, 1)
+    ) +
+    labs(
+        x = "Diagnosis year",
+        y = paste(
+            "Age-adjusted incidence rate",
+            "per 100,000 person year",
+            sep = "\n"
+        )
+    )
+```
+
+#### Code {.accordion}
+
+```{r rate-plot, echo = TRUE, eval = FALSE}
+```
+
+### Compare the age-adjusted rates by sex {.accordions}
+
+#### Plot {.accordion}
+```{r adj-rate-plot, echo=FALSE, fig.asp = 0.5, fig.cap = "Age-standardized melanoma rate in Australia", dev = "svg"}
+ggplot(asp, aes(x = Year, y = AgeAdjRate, color = Sex)) +
+    geom_line() +
+    geom_point(fill = "whitesmoke", shape = 21) +
+    scale_x_continuous(breaks = scales::breaks_extended(8)) +
+    scale_y_continuous(breaks = scales::breaks_extended(8)) +
+    scale_color_brewer(palette = "Set1") +
+    theme_minimal() +
+    theme(
+        panel.border = element_rect(fill = NA, color = "darkgrey"),
+        legend.position = c(0, 1),
+        legend.justification = c(0, 1)
+    ) +
+    labs(
+        x = "Diagnosis year",
+        y = paste(
+            "Age-adjusted incidence rate",
+            "per 100,000 person year",
+            sep = "\n"
+        )
+    ) +
+    expand_limits(y = 0)
+```
+
+#### Code {.accordion}
+
+```{r rate-plot, echo = TRUE, eval = FALSE}
+```
+
+## Discussion
+
+Figure \@fig(rate-plot) shows that the incidence of melanoma has larger 
+difference in men between the age-groups than in women and men also have a sharp 
+increase in older age group. In addition, the Figure \@fig(adj-rate-plot) shows that males have higher
+age-adjusted incidence of melanoma than women in Australia and this trend is 
+increasing over time with rapid increase before 1983 before a drop.
+
+Age-adjusted rates are useful for comparing rates between population but it
+cannot give the interpretation required for comparing within a population or
+over a time period in that population. This is one of the reason, cancer registry
+uses the internal (population structure of their own population) to compute the
+age-adjusted rates.
+
+
+[^1]: https://www.cdc.gov/csels/dsepd/ss1978/lesson3/section1.html
+[^2]: https://www.aihw.gov.au/reports/cancer/cancer-data-in-australia/data
+[^3]: https://www.kreftregisteret.no/globalassets/cancer-in-norway/2021/cin_report.pdf
+[^4]: https://cancerregistry.fi/reports-and-publications/annual-report-on-cancer-in-finland/
+[^5]: https://www.aihw.gov.au/reports/cancer/cancer-in-australia-2021/summary
+[^6]: https://seer.cancer.gov/stdpopulations/stdpop.19ages.html

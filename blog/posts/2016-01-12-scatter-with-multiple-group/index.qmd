@@ -1,0 +1,120 @@
+---
+title: Scatter plot with multiple group
+slug: scatter-plot-multple-group
+author: Raju Rimal
+date: 2016-01-12
+tags:
+  - Statistics
+  - Regression
+  - R
+  - Visualization
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  comment = NA, 
+  dev = "svg",
+  fig.align = 'center', 
+  out.width = "100%",
+  warning = FALSE, 
+  message = FALSE
+)
+```
+
+
+In many situations, it becomes essential to have a plot with multiple categories. For example, colour the scatter plot according to gender and have two different regression line for each of them.
+
+Lets scatter the some points using data from `mtcars`, available default in R. Continuing the discussing from this post, where we had plotted mile per gallon (`mpg`) vs displacement (`disp`). Here we will create a separate regression line and colour the points accordingly based on number of cylinder (`cyl`) in the cars. In this article also, I will use there plotting system -- base graphics, lattice plot and ggplot2. 
+
+First, lets fit our linear model with number of cylinder as a categorical variable.
+
+```{r  fit-model}
+mtcars <- within(mtcars, cyl <- as.factor(cyl))
+mdl    <- lm(mpg ~ disp * cyl, data = mtcars)
+sumry  <- summary(mdl)
+sumry
+```
+
+Lets create a (intercept, slope) pair for each level of `cyl` and create separate equation for them.
+
+```{r create-eqn}
+cf  <- round(coef(mdl), 3)
+eq1 <- c(cf[1], cf[2])
+eq2 <- c(cf[1] + cf[3], cf[2] + cf[5])
+eq3 <- c(cf[1] + cf[4], cf[2] + cf[6])
+eq.fn <- function(eq) {
+  paste0("mpg = ", eq[1],
+         ifelse(eq[2] < 0, " - ", " + "),
+         abs(eq[2]), " disp")
+}
+eqn <- sapply(list(eq1, eq2, eq3), eq.fn)
+rsq.info <- c(paste0("R^2: ", round(sumry[["r.squared"]], 2)),
+              paste0("adj. R^2: ", round(sumry[["adj.r.squared"]], 2)))
+```
+
+## Plots {.tabset}
+
+::: panel-tabset
+
+### Base Graphics {.tab}
+```{r base-plot}
+with(mtcars, {
+  car::scatterplot(disp, mpg, groups = cyl, smooth = F,
+                   xlab = "Displacement",
+                   ylab = "Mile per Gallon",
+                   main = "Mile per gallon vs displacement")
+})
+op <- par(family = "monospace")
+legend("topright", text.col = 1:3, col = 1:3, box.lty = 0,
+       lty = 1, lwd = 1, legend = eqn)
+legend("bottomleft", legend = rsq.info)
+par(op)
+```
+
+### Lattice Plot {.tab}
+```{r lattice-graphics}
+library(lattice)
+lm.panel <- function(x, y, ...) {
+  panel.xyplot(x, y, ...)
+  panel.abline(eq1, col = 1, lwd = 2, lty = 2)
+  panel.abline(eq2, col = 2, lwd = 2, lty = 2)
+  panel.abline(eq3, col = 3, lwd = 2, lty = 2)
+  panel.text(max(x), max(y), pos = 2,
+             fontfamily = "monospace",
+             label = paste(eqn, collapse = "\n"))
+  panel.text(min(x), min(y), pos = 4,
+             fontfamily = "monospace",
+             label = paste(rsq.info, collapse = "\n"))
+}
+xyplot(mpg ~ disp, data = mtcars, groups = cyl,
+       auto.key = list(columns = 3, cex = 0.8,
+                       title = "Cylinder"),
+       col = 1:3, xlab = "Displacement",
+       ylab = "Mile per gallon",
+       panel = lm.panel)
+```
+
+### ggplot2 {.tab}
+```{r ggplot}
+library(ggplot2)
+## Equation table for displaying them on the plot
+eqn.df <- with(mtcars, {
+  data.frame(
+    cyl  = sort(unique(cyl)),
+    mpg  = max(mpg) - c(1:3),
+    disp = max(disp), eqn = eqn
+  )
+})
+ggplot(mtcars, aes(disp, mpg, color = cyl)) +
+  geom_point() +
+  theme_bw(base_size = 14) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_text(data = eqn.df, aes(label = eqn),
+            hjust = 1, family = "mono") +
+  annotate(geom = "text",
+           x = min(mtcars$disp), y = min(mtcars$mpg),
+           family = "mono", hjust = 0,
+           label = paste0(rsq.info, collapse = "\n"))
+```
+
+:::

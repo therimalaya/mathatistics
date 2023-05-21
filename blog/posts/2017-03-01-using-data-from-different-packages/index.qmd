@@ -1,0 +1,27 @@
+---
+title: Using Data from different Packages
+slug: dataset-in-r
+author: Junali Chhetri
+date: 2017-03-01
+categories:
+  - R
+---
+Most of the time we need data either for teaching purpose or learning things. Whatever be the reason, data are really important things. R and different packages of R contains different datasets which we can use directly just by installing them. Many books related to R illustrate there examples using these data sources. We can find the dataset from differnt sources as `data()`
+
+The datasets from the package `datasets` and other loaded packages is shown in default. However, we can obtain the datasets contained in specific packages as,
+
+```{r eval = FALSE}
+data(package='MASS')
+```
+
+The above will output the dataset contained in the package `MASS`. These datasets can be saved in a variable and used as different data structure like matrix, data frame or may be list. For example,
+
+```{r eval = FALSE}
+data(Rubber, package='MASS') 
+rubber.data <- Rubber
+```
+
+
+### Exercises
+  1. Save the Rabbit dataset from the package `MASS` into rabbitData and find the mean of BPchange for different Doses applied.
+  2. Load the data Greene from package `car` and find which location has the maximum variation in success.

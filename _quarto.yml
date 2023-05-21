@@ -1,0 +1,33 @@
+project:
+  type: website
+
+website:
+  title: Mathatistics
+  description: My personal blog where I share my experiences and my learning journey.
+  favicon: images/mathatistics.svg
+  cookie-consent: false
+  navbar:
+    logo: images/mathatistics.svg
+    logo-alt: Mathatistics
+    background: dark
+    foreground: light
+    right:
+      - href: index.qmd
+        text: Home
+      - href: resume
+        text: Resume
+      - href: blog.qmd
+        text: Blog
+    tools:
+      - icon: github
+        href: https://github.com/therimalaya
+        aria-label: GitHub
+
+format:
+  html:
+    fontsize: 1.2em
+    linestretch: 1.75
+    theme:
+      light: [default, light.scss, styles.scss]
+      dark: [default, dark.scss, styles.scss]
+    toc: true

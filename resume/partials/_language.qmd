@@ -1,0 +1,11 @@
+```{r}
+#| echo: false
+map_df(data$languages, pluck, 1) %>% 
+  cbind(Language = map_chr(data$languages, names)) %>% 
+  gt::gt(rowname_col = "Language") %>% 
+  gt::tab_options(
+    table.width = "100%",
+    stub.font.weight = "bold",
+    column_labels.font.weight = "bold"
+  )
+```

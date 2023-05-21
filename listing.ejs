@@ -1,0 +1,24 @@
+<main class="listing-content" id="listing-content">
+<% for (const item of items) { %>
+<div class="lst-row">
+<a href="<%- item['path'] %>">
+<div class="lst-body">
+<p class="h4 lst-title"><%= item['title'] %></p>
+<% if(item['subtitle']) { %>
+<div class="h5 lead lst-subtitle">
+<%= item['subtitle'] %>
+</div>
+<% } %>
+</div>
+<div class="lst-meta">
+<div class="lst-date"><%= item['date'] %></div>
+<div class="lst-author"><%= item['author'] %></div>
+<div class="lst-reading-time"><%= item['reading-time'] %></div>
+</div>
+</a>
+</div>
+<% } %>
+</main>
+
+
+

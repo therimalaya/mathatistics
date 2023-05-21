@@ -1,0 +1,149 @@
+---
+title: Model assessment and variable selection
+slug: model-assessment-variable-selection
+author: therimalaya
+date: 2017-03-05
+toc: true
+tags:
+  - Statistics
+  - Modeling
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  comment = NA,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  fig.asp = 0.5,
+  out.width = "100%",
+  results = "hold"
+)
+```
+
+Whenever we add a variable in our model, we are not only adding information but also noise that clutter the information and makes the analysis difficult. Simpler model is always better since they contain less noise and they are easy to interpret. In real life, things are not that simple. But relax, there are statistical methods that make model assessment and perform variable selection and gives optimal set of variables for us. 
+
+Here, I will discuss how to compare model to know which one is better than other. This model assessment help us to select a model with few variable that can perform as good as a model with large number of variables. Here comes the idea of variable selection. I will try to explain these concepts with an example. For the example I will use `mtcars` data set which is available in R by default. Following are two well know procedure of selecting subset of variables,
+
+# Best subset method #
+
+Best subset procedure selects best regression model by running all possible subset of variables. When number of variable is large, the possible combinations of candidate subset become huge. For example, for 2 variable case ($X_1$ and $X_2$), there are 4 possible subsets -- 1 with no predictors, 2 with single predictors and 1 with both predictors. Similarly, if there are 4 variable case ($X_1, X_2, X_3$ and $X_4$), there will be 16 possible subset. In general, fitting all possible subset of large number of predictors becomes computationally intensive.
+
+Once, all the possible model is fitted, they are compared based on some criteria. This model assessment may based on various criteria such as coefficient of determination ($R^2$), adjusted $R^2$, Mallow's CP, AIC and BIC. In R, [leaps](https://www.rdocumentation.org/packages/leaps/versions/2.1-1) package can be used for performing this operation. Lets dig into our `mtcars` example.
+
+<details>
+<summary>
+**Fitting a complete model:**
+```{r model-fit}
+full.model <- lm(mpg ~ ., data = mtcars)
+smry <- summary(full.model)
+```
+</summary>
+```{r full-model-summary}
+smry
+```
+</details>
+
+Here, we can see that the model has explained almost `r round(smry [['r.squared']]*100, 2)` percent of variation present in `mpg`, but non of the predictors are significant. This is a hint of having unnecessary variables that has increased model error. Using `regsubsets` function from `leaps` package, we can select a subset of predictors based on some criteria.
+
+```{r best-subset}
+library(leaps)
+best.subset <-
+  regsubsets(
+    x      = mtcars[, -1],     # predictor variables
+    y      = mtcars[, 1],      # response variable (mpg)
+    nbest  = 1,                # top 1 best model
+    nvmax  = ncol(mtcars) - 1, # max. number of variable (all)
+    method = "exhaustive"      # search all possible subset
+  )
+bs.smry <- summary(best.subset)
+```
+
+We can combine following summary output with a plot created from additional estimates to get some insight. These estimates are also found in the summary object. The output show which variables are included with a star(`*`). 
+
+```{r best-subset-out}
+pander::pander(bs.smry$outmat)
+bs.est <- data.frame(
+  nvar   = 1:(best.subset$nvmax - 1),
+  adj.r2 = round(bs.smry$adjr2, 3),
+  cp     = round(bs.smry$cp, 3),
+  bic    = round(bs.smry$bic, 3)
+)
+bs.est <- tidyr::gather(bs.est, "estimates", "value", -nvar)
+```
+
+<details>
+<summary> We can make a plot to visualise the properties of these individual models and select a model with specific number of predictor that can give minimum BIC, or minimum CP or maximum adjusted rsquared.</summary>
+
+```{r best-subset-plot, message = FALSE, warning = FALSE}
+library(ggplot2)
+library(dplyr)
+bs.est.select <- bs.est %>%
+  group_by(estimates) %>%
+  filter(
+    (value == max(value) & estimates == "adj.r2") |
+    (value == min(value) & estimates != "adj.r2")
+  )
+assessment.plt <- ggplot(bs.est, aes(nvar, value, color = estimates)) +
+  geom_point(shape = 21, fill = "lightgray") +
+  geom_line() +
+  facet_wrap(~estimates, scale = 'free_y') +
+  theme(legend.position = "top") +
+  labs(x = "Number of variables in the model",
+       y = "Value of Estimate") +
+  scale_x_continuous(breaks = seq(0, 10, 2)) +
+  geom_point(data = bs.est.select, fill = "red",
+             shape = 21) +
+  geom_text(aes(label = paste0("nvar:", nvar, '\n', "value:", value)),
+            data = bs.est.select, 
+            size = 3, hjust = 0, vjust = c(1, -1, -1),
+            color = "black", family = "monospace")
+```
+</details>
+
+```{r assessment.plot, fig.height=4, echo=FALSE}
+assessment.plt
+```
+
+From these plots, we see that with 5 variables we will obtain maximum adjusted coefficient of determination ($R^2$). Similarly, both BIC and Mallow CP will be minimum for models with only 3 predictor variables. With the help of table above, we can identify these variables. From the table, row corresponding to 3 variables, we see that the three predictors are `wt`, `qsec` and `am`. To obtain maximum adjusted $R^2$, `disp` and `hp` should be added to the previous 3 predictors.
+
+This way, we can reduce a model to few variables optimising different assessment criteria. Let look at the fit of these reduced models:
+
+```{r reduced-model}
+model.3 <- lm(mpg ~ wt + qsec + am, data = mtcars)
+model.5 <- update(model.3, . ~ . + disp + hp)
+```
+
+## Summaries of the models {.tabset}
+
+### 3 Variable Model {.tab}
+```{r model.3-summary}
+summary(model.3)
+```
+
+### 5 Variable Model {.tab}
+```{r model.5-summary}
+summary(model.5)
+```
+
+From these output, it seems that although adjusted $R^2$ has increased in later model, the additional variables are not significant. we can compare these two model with an ANOVA test which compares the residual variance between these two models. We can write the hypothesis as,
+
+$H_0:$ _Model 1_ and _Model 2_ are same vs $H_1:$ _Model 1_ and _Model 2_ are different
+
+where, _Model 1_ and _Model 2_ represents 3 variable and 5 variable model
+
+```{r anova}
+anova(model.3, model.5)
+```
+
+The ANOVA result can not reject the hypothesis so claim that _Model 1_ and _Model 2_ are same. So, it is better to select the simpler model with 3 predictor variables. 
+
+# Step-wise selection #
+
+When the number of increases, a exhaustive search of all possible subset is computationally intensive. This disadvantage can be overcome by using step-wise selection procedure. A step-wise variable selection procedure can be,
+
+**Forward Selection Procedure**
+  : In this procedure ... 
+
+**Backward Elimination Procedure**
+  : Here ...

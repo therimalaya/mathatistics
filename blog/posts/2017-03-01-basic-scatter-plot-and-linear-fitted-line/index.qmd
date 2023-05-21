@@ -1,0 +1,97 @@
+---
+title: Basic Scatter Plot and linear fitted line
+slug: basic-scatter-plot-with-reg-line
+author: therimalaya
+date: 2017-03-01
+tags:
+  - R
+  - Statistics
+  - Regression
+  - Visualization
+---
+
+```{r, include = FALSE, echo = FALSE}
+knitr::opts_chunk$set(
+  comment = NA,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  dev = "svg",
+  out.width = "100%"
+)
+```
+
+Lets scatter into some points created by data in xy-space. Data are scattered everywhere but what relation is there between some specific variable with other. Cutting down to simple talking and stick to the heading, we can use [`mtcars`](https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/mtcars.html) dataset in R.
+
+The dataset from Motor Trend US magazine, 1974 comprises fuel consumption and 10 various aspects of automobile design and their performance for 32 automobiles of different models. I will try to obtain the scatter plot for the model and the fitted line for the model.
+
+In R, there are three popular packages for obtaining plots _Base Graphics_, _Lattice Plot_ and _ggplot2_. Here we will create a scatter plot between two variables `mpg` (mile per gallon) and `disp`(displacement) along with the fitted regession line with equation and $R²$ value in it using all there graphics packages.
+
+Lets first fit a linear model,
+
+```{r}
+mdl <- lm(mpg ~ disp, data = mtcars)
+sumry <- summary(mdl)
+cf <- round(coef(mdl), 2)
+
+eqn <- paste(terms(mdl)[[2]],
+             paste0(cf[1], ifelse(cf[2] < 0, " ", " + "),
+                    cf[2], " ", terms(mdl)[[3]]), sep = " = ")
+sumry.lbl <- paste0("R^2: ", round(sumry$r.squared, 2),
+                    ", adj R^2: ", round(sumry$adj.r.squared, 2))
+```
+
+## Plots {.tabset}
+
+### Base Graphics {.tab}
+```{r}
+with(mtcars, {
+  plot(disp, mpg, pch = 22, bg = "gray",
+       xlab = "Displacement", ylab = "Mile per Gallon",
+       main = "Displacement vs Mile per Gallon")
+  abline(mdl, col = "red", lty = 2, lwd = 2)
+  text(max(disp), max(mpg), adj = c(1, 1), family = "monospace",
+       label = paste(eqn, sumry.lbl, sep = "\n"))
+})
+```
+
+### Lattice Plot {.tab}
+```{r}
+library(lattice)
+lm.panel <- function(x, y, ...) {
+  panel.xyplot(x, y, pch = 22, fill = "gray",
+               cex = 1.2, col = "black")
+  panel.text(max(x), max(y), pos = 2,
+             fontfamily = "monospace",
+             label = paste(eqn, sumry.lbl, sep = "\n"))
+  panel.abline(mdl, col = "red", lty = 2, lwd = 2)
+}
+xyplot(mpg ~ disp, data = mtcars,
+       panel = lm.panel,
+       main = "Displacement vs Mile per Gallon",
+       xlab = "Displacement", ylab = "Mile per Gallon")
+```
+
+### ggplot {.tab}
+```{r}
+library(ggplot2)
+plt <- qplot(disp, mpg, data = mtcars, geom = c("point"),
+             xlab = "Displacement",
+             ylab = "Mile per Gallon",
+             main = "Displacement vs Mile per Gallon",
+             size = I(3), shape = I(22), fill = I("grey"))
+plt + theme_bw() +
+  geom_smooth(method = "lm", color = "red", linetype = 2) +
+  annotate(x = Inf, y = Inf, geom = "text",
+           hjust = 1.2, vjust = 1.2,
+           family = "monospace",
+           label = paste(eqn, sumry.lbl, sep = "\n"))
+```
+
+The fitted regression summary is,
+
+```{r, echo = FALSE}
+sumry
+```
+
+This means, the effect of displacement on mile per gallon of the cars in the model is negative and its magnitude is 0.04. In other words, on one unit change of displacement, the car will travel 0.04 less per gallon.
