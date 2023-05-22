@@ -12,7 +12,7 @@
 
 ---
 
-::: row
+::: {.row .social}
 [{{< fa brands orcid size=xl title="Orcid:" >}}](https://orcid.org/0000-0001-6097-0285)
 
 [{{< fa brands twitter size=xl title="Twitter:" >}}](https://twitter.com/mathatistics)
@@ -35,6 +35,11 @@
 ::: row
 {{< fa id-card size=lg title="Stack Overflow:" >}}
 Driving licence class B
+:::
+
+::: row
+{{< fa file-pdf size=lg title="PDF CV" >}}
+[Download PDF](cv.pdf)
 :::
 
 :::
