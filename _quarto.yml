@@ -15,6 +15,10 @@ website:
     right:
       - href: index.qmd
         text: Home
+      - href: photography
+        text: Photo Gallery
+      - href: portfolio
+        text: Portfolio
       - href: resume
         text: Resume
       - href: blog.qmd
@@ -26,6 +30,8 @@ website:
 
 format:
   html:
+    filters:
+      - lightbox
     fontsize: 1.2em
     linestretch: 1.75
     theme:

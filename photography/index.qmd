@@ -1,0 +1,130 @@
+---
+title: "Photo Gallery"
+page-layout: full
+format:
+  html:
+    toc: false
+    css: style.css
+search: false
+lightbox: auto
+execute:
+  echo: false
+description: |
+  My snapshots when wondering around.
+---
+
+<!-- For some reason following line is loading the 
+lightbox library -->
+
+![](photos/thumb/00025159.jpg){.lightbox style="display:none;"}
+
+```{r}
+#| include: false
+autoload("%>%", "magrittr")
+library(htmltools)
+library(purrr)
+```
+
+```{r}
+#| warning: false
+images <- dir("photos", pattern = ".*jpg")
+n_images <- length(images)
+grid_size <- 10
+n_carousel <- ceiling(n_images/grid_size)
+image_list <- split(1:n_images, rep(1:n_carousel, each = grid_size))
+```
+
+::: {#carouselGallery .carousel .slide data-bs-ride="carousel"}
+::: {.carousel-indicators}
+
+```{r}
+#| output: asis
+for (i in 1:n_carousel) {
+  tags$button(
+    type = "button",
+    class = if (i == 1) "active" else NULL,
+    `data-bs-target` = "#carouselGallery",
+    `data-bs-slide-to` = glue::glue("{i-1}"),
+    `aria-current` = "true",
+    `aria-label` = glue::glue("Slide {i}")
+  ) %>% print()
+}
+```
+:::
+::: {.carousel-inner}
+
+```{r}
+#| output: false
+carousels <- map(1:n_carousel, function(i) {
+  div(
+    class = c("carousel-item", if(i == 1) "active" else NULL),
+    div(
+      id = glue::glue("carousel-{i}"),
+      class = c("carousel-content", "grid-container"),
+      style = "width: 100%; height: 500px;"
+    )
+  )  %>% print()
+})
+```
+
+```{r}
+#| output: asis
+imap(carousels, function(carousel, idx) {
+  imgs <- map(image_list[[idx]], function(img_idx) {
+    a(
+      class = "lightbox",
+      `data-gallery` = "gallery",
+      href = paste0("photos/", images[img_idx]),
+      img(
+        src = paste0("photos/", images[img_idx]),
+        class = "img-fluid"
+      )
+    )
+  }) %>% htmltools::as.tags()
+
+  tagAppendChildren(
+    carousel,
+    .cssSelector = ".carousel-content",
+    imgs
+  )
+}) %>% as.tags()
+```
+
+:::
+
+```{r, eval = FALSE}
+tagList(
+  tags$button(
+    class = "carousel-control-prev",
+    type = "button",
+    `data-bs-target` = "#carouselGallery",
+    `data-bs-slide`="prev",
+    span(
+      class = "carousel-control-prev",
+      type = "button",
+      `data-bs-target` = "#carouselGallery"
+    ),
+    span(
+      class = "visually-hidden",
+      "Previous"
+    )
+  ),
+  tags$button(
+    class = "carousel-control-next",
+    type = "button",
+    `data-bs-target` = "#carouselGallery",
+    `data-bs-slide`="next",
+    span(
+      class = "carousel-control-next",
+      type = "button",
+      `data-bs-target` = "#carouselGallery"
+    ),
+    span(
+      class = "visually-hidden",
+      "Next"
+    )
+  )
+)
+```
+
+:::

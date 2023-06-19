@@ -61,5 +61,14 @@
   },
   "resume/index.qmd": {
     "index.html": "ac52f622"
+  },
+  "photography/index.qmd": {
+    "index.html": "738dfa09"
+  },
+  "gallery/index.qmd": {
+    "index.html": "3d1e6546"
+  },
+  "portfolio/index.qmd": {
+    "index.html": "1ca3f5c9"
   }
 }

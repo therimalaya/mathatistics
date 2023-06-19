@@ -154,6 +154,11 @@ education:
             Norwegian University of Life Sciences, Ås, 2019.
           url: https://therimalaya.github.io/Thesis/Thesis.pdf
   conferences:
+    - name: ANCR Symposium, 2022
+      location: Tórshavn, Faroe Islands
+      title: Trends in melanoma tumour thickness in Norway, 1983--2019
+      period: Sept 14--16, 2022
+      type: Poster
     - name: NOFE Conference 2021
       location: Bergen, Norway
       title: Long-term Trend on Tumour Thickness of Melanoma in Norway
@@ -184,6 +189,11 @@ education:
       title: A comparison of multi-response prediction methods
       period: Jun 17-20, 2019
       type: Presentation
+    - name: The first annual conference of NORBIS
+      location: Rosendal Fjordhotel, Norway
+      title: Multimatrix Extension of Partial Least Square
+      period: October 28-30, 2015
+      type: Poster
   academic:
     - institution: Norwegian University of Life Sciences
       address: Ås, Norway

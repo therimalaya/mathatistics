@@ -1,0 +1,77 @@
+presentations:
+  - title: "Long-term Trend on Tumour Thickness of Melanoma in Norway"
+    name: NOFE Conference, 2021
+    address: Bergen, Norway
+    year: 2021
+    img: images/NOFE-2021.png
+    url: https://therimalaya.github.io/NOFE-2021/Presentation.pdf
+  - title: A versatile tool for simulating linear model data
+    name: UseR! 2018 Conference
+    address: Brisbane, Australia
+    year: 2018
+    img: images/user2018.png
+    url: https://therimalaya.github.io/UseR-2018/index.html
+  - title: "Simrel-M: A simulation tool and its application"
+    name: The 19th national meeting of statistics (Norske Statistikermøtet)
+    address: Fredrikstad, Norway
+    year: 2017
+    img: images/nsm2017.png
+    url: https://mathatistics.github.io/nsm-17/#/title
+  - title: A comparison of multi-response prediction methods
+    name: Scandinavian Symposium on Chemometrics (SSC16) Conference
+    address: Oslo, Norway
+    year: 2016
+    img: images/ssc16.png
+    url: https://therimalaya.github.io/SSC16/index.html
+posters:
+  - title: Trends in melanoma tumour thickness in Norway, 1983--2019
+    name: ANCR-Symposium, 2022
+    address: Tórshavn, Faroe Islands
+    year: 2022
+    img: images/ancr-2022.png
+    url: https://therimalaya.github.io/Melanoma-World-Conference-Poster/Poster/
+  - title: Long-term trend in melanoma tumour thickness in Norway 
+    name: Tenth World Congress of Melanoma in Conjunction with 17th EADO Congress
+    address: Virtual (Online)
+    year: 2021
+    img: images/melanoma-congress.png
+    url: https://therimalaya.github.io/Melanoma-World-Conference-Poster/Poster/
+  - title: "Simrel-M: A simulation tool for multi-response linear model data"
+    name: 26th Nordic Conference in Mathematical Statistics (NordStat, 2016)
+    address: Copenhagen, Danmark
+    year: 2016
+    img: images/nordstat-2016.png
+    url: https://mathatistics.github.io/NORSTAT/Poster.pdf
+  - title: Multimatrix Extension of Partial Least Square
+    name: The first annual conference of NORBIS
+    address: Rosendal Fjordhotel, Norway
+    year: 2015
+    img: images/norbis-2015.png
+    url: https://mathatistics.github.io/NORBIS/main.pdf
+assorted:
+  - title: "A versatile tool for simulating linear model data"
+    address: "Biostatistics group, NMBU"
+    date: "15 Mar, 2018"
+    img: "BIAS-2018.png"
+    url: "https://courses.cloudrimalaya.com/talks/biostat-2018"
+  - title: "A versatile simulation tool with an example of its application"
+    address: "Klekken seminar, 2018"
+    date: "2018"
+    img: "Klekken-2018.png"
+    url: "https://courses.cloudrimalaya.com/talks/klekken-2018"
+  - title: "Simulation Tool and its application"
+    address: "PhD Midway Seminar, NMBU"
+    date: "2018"
+    img: "PhD-Midway-Seminar.png"
+    url: "https://courses.cloudrimalaya.com/talks/midway-seminar"
+  - title: "Use of Simulation in Statistics"
+    address: "Norwegian University of Life Sciences (NMBU)"
+    date: "2019"
+    img: "Trial-Lecture.png"
+    url: "https://courses.cloudrimalaya.com/talks/trial-lecture"
+  - title: "Grammer of graphics with ggplot"
+    address: "Radium Hospital"
+    date: "2022"
+    img: "Radium-ggplot2.png"
+    url: "https://courses.cloudrimalaya.com/talks/radium-ggplot2"
+

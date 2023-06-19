@@ -1,0 +1,16 @@
+{
+  "hash": "6e5236ca2eb810030a5de748e656abb9",
+  "result": {
+    "markdown": "---\ntitle  : Interpreting Biplot\nslug   : interpreting-biplot\nauthor : therimalaya\ndate   : 2017-03-18\ncategories:\n  - statistics\ntags:\n  - biplot\n  - interpretation of biplot\n  - pca\n---\n\n\n\n\nObviously, the name suggests itself that there are two aspect of data plotted in latent scale. Biplot in case of principal component analysis (PCA) plot both variable and observation in latent scale (scores and loadings). Throughout this article, I will use [`USArrests`](https://www.rdocumentation.org/packages/datasets/versions/3.3.2/topics/USArrests) data from `datasets` package. Lets fit a PCA model using `princomp` function. However, this can also be done using `prcomp`. The later one uses singular value decomposition while the former one uses eigenvalue decomposition. Here I have used correlation rather than covariance to compute principal components because there are large values in case of `Murder` and `UrbanPop`\n\n\n::: {.cell layout-align=\"center\"}\n\n```{.r .cell-code}\npc.a <- princomp(USArrests, cor = TRUE)\nplot(pc.a, type = \"lines\", pch = 22, bg = \"grey\",\n     main = \"Variance explained by each componets in PCA\")\ntext(1:4, pc.a$sdev^2, pos = 4,\n     labels = round(cumsum(pls::explvar(pc.a)), 1))\nbox()\n```\n\n::: {.cell-output-display}\n![Variance of each components and the proportaion of the total variance explained for each additional components is displayed as label](index_files/figure-html/get-records-1.png){fig-align='center' width=100%}\n:::\n:::\n\n\nHere, with three components, we have captured 95.7 percent of total variation present in `USArrests` dataset. Lets get the biplot and try to understand it.\n\n\n::: {.cell layout-align=\"center\"}\n\n```{.r .cell-code}\nlibrary(ggfortify)\nautoplot(\n  pc.a, label = T, shape = FALSE,\n  loadings = TRUE, loadings.label = TRUE,\n  label.size = 3.5, label.repel = TRUE)\n```\n\n::: {.cell-output-display}\n![](index_files/figure-html/biplot-1.png){fig-align='center' width=100%}\n:::\n:::\n",
+    "supporting": [
+      "index_files"
+    ],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

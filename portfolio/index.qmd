@@ -1,0 +1,220 @@
+---
+title: My Portfolio
+format:
+  html:
+    toc: false
+    css: style.css
+search: false
+lightbox: auto
+bibliography: references.bib
+link-citations: true
+link-external-newwindow: true
+nocite: "@*"
+execute:
+  echo: false
+description: |
+  Conference talks, courses, publications and other projects
+---
+
+```{r}
+#| include: false
+library(RefManageR)
+library(markdown)
+library(htmltools)
+library(purrr)
+library(yaml)
+```
+
+::: publications
+## Publications
+
+```{r}
+#| output: asis
+#| eval: false 
+refs <- RefManageR::ReadBib("references.bib")
+map(names(refs), function(.name) {
+  ref <- refs[[.name]]
+  tags$details(
+    tags$summary(refs[[.name]]$title),
+    p(gsub("\\[.*\\] ", "", paste(capture.output(ref), collapse = "\n")))
+  )
+}) %>% htmltools::as.tags()
+```
+::: {#refs}
+:::
+:::
+
+::: projects
+## Apps and Packages
+
+::: panel-tabset
+### R-package
+#### Simrel R-package:
+`simrel` R-package is a versatile tool for simulation of linear model data. Using the package users can simulate univariate, bivariate with specific correlation and multivariate (multiple response) linear model data. The simulation approach is based on relevant space of a linear model similar to Partial least squares (PLS) and Envelope models.
+
+**CRAN:** [https://cran.r-project.org/web/packages/simrel/index.html](https://cran.r-project.org/web/packages/simrel/index.html)
+
+**GitHub:** [https://simulatr.github.io/simrel/](https://simulatr.github.io/simrel/)
+
+AppSimulatr: 
+: A shiny application for versatile simulation from linear model in R based on R-package `simrel`. App uses simple interface to specify various parameters for simulation, visualize the properties and download the simulated data.
+
+**GitHub:** [https://github.com/simulatr/AppSimulatr](https://github.com/simulatr/AppSimulatr)
+
+### Web application
+#### Towards SDG
+A web application for collecting data from researchers and educators on their contribution to SDG goals, targets and their interactions. The app was build using mongodb for database, graphql for API and React for front end. A prototype of the app can be accessed from following link.
+
+**URL:** [https://therimalaya.github.io/Towards-SDG/](https://therimalaya.github.io/Towards-SDG/)
+
+
+:::
+:::
+
+
+::: conferences
+## Conference participation
+::: panel-tabset
+### Presentation
+
+```{r}
+#| output: asis
+items <- yaml::read_yaml("conferences.yaml") %>% 
+  pluck("presentations")
+div(class = "card-grid") %>% htmltools::tagAppendChildren(
+  map(items, function(item) {
+    div(
+      class = c("card presentation"),
+      img(
+        src = item$img, 
+        class = c("img-fluid", "rounded-start"), 
+        alt = item$title
+      ),
+      div(
+        class = "card-body",
+        a(
+          href = item$url,
+          h5(class = "card-title", item$title)
+        ),
+        p(class = "card-text mb-0", item$name),
+        p(class = "card-text", tags$small(item$address))
+      )
+    )
+  }) %>% htmltools::as.tags()
+)
+
+```
+
+### Poster
+
+```{r}
+#| output: asis
+items <- yaml::read_yaml("conferences.yaml") %>% 
+  pluck("posters")
+div(class = "card-grid") %>% htmltools::tagAppendChildren(
+  map(items, function(item) {
+    div(
+      class = c("card presentation"),
+      img(
+        src = item$img, 
+        class = c("img-fluid", "rounded-start"), 
+        alt = item$title
+      ),
+      div(
+        class = "card-body",
+        a(
+          href = item$url,
+          h5(class = "card-title", item$title)
+        ),
+        p(class = "card-text mb-0", item$name),
+        p(class = "card-text", tags$small(item$address))
+      )
+    )
+  }) %>% htmltools::as.tags()
+)
+
+```
+:::
+:::
+
+::: courses
+
+## Courses
+### Design of Experiment and Analysis of Variance
+A three day quick repetition of the course. It includes some of
+the following topics,
+
+- Inference: Hypothesis, Tests (T, F, Chi-sq)
+- ANOVA (test, confidence interval, post-hoc test, contrast)
+- Fixed and random effects, multiple factors and interaction
+- Model assessment 
+
+::: {.grid style="text-align: center;"}
+::: g-col-4
+[![Day-1](images/STAT-310-D1.png){width="100%" style="border:1px solid grey;"}](https://therimalaya.github.io/stat210-repetition/Day1.html)
+:::
+::: g-col-4
+[![Day-2](images/STAT-310-D2.png){width="100%" style="border:1px solid grey;"}](https://therimalaya.github.io/stat210-repetition/Day2.html)
+:::
+::: g-col-4
+[![Day-3](images/STAT-310-D3.png){width="100%" style="border:1px solid grey;"}](https://therimalaya.github.io/stat210-repetition/Day3.html)
+:::
+:::
+
+### Discrimination and Classification
+
+::: columns
+::: {.column width="40%"}
+[![Discrimination and Classification](images/STAT-340-2018.png){fig-align="left" width="85%" style="border: 1px solid grey;"}](https://mathatistics.github.io/stat340-lecture/#1)
+:::
+::: {.column width="60%"}
+
+This one day lecture covers following topics,
+
+**Discrimination**: Univariate, Bivariate, decision regions
+
+**Classification**: LDA, QDA, confusion matrix
+
+**Model selection and evaluation**: Error measures, cross-validation
+
+:::
+
+:::
+
+:::
+
+::: slide-grid
+
+## Assorted presentations
+
+::: {.grid style="gap: 0.5rem;"}
+
+```{r}
+#| output: asis
+#| echo: false
+items <- yaml::read_yaml("conferences.yaml") %>% 
+  pluck("assorted")
+for (item in items) {
+cat("::: {.g-col-4 width='100%' height='auto' style='background: #f0f0f0;'}\n")
+
+cat(glue::glue("![](images/{item$img})"), "\n")
+
+cat(":::\n")
+
+cat("::: {.g-col-8 width='100%' height='auto' style='background: #f0f0f0; padding: 10px 15px;'}\n")
+
+cat(glue::glue("##### [{item$title}]({item$url})"), "\n")
+cat(glue::glue("{item$address}, {item$date}"), "\n")
+
+cat(":::\n")
+
+}
+
+
+```
+
+:::
+
+:::
+
+

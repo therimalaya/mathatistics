@@ -2,7 +2,9 @@
   "hash": "8058978d1bdde28b3fd4e0ecb1eff7e0",
   "result": {
     "markdown": "---\ntitle: \"Blog\"\nsubtitle: \"A window of my learning experience\"\nlisting:\n  template: listing.ejs\n  contents: blog\n  sort: \"date desc\"\n  type: default\n  categories: numbered\n  sort-ui: false\n  filter-ui: false\n  date-format: long\n  fields: \n    - author\n    - date\n    - reading-time\n    - title\n    - subtitle\npage-layout: full\ntitle-block-banner: false\ncomments: false\nfontsize: 1.1em\nknitr: \n  opts_chunk:\n    collapse: true\n---\n",
-    "supporting": [],
+    "supporting": [
+      "blog_files"
+    ],
     "filters": [
       "rmarkdown/pagebreak.lua"
     ],
