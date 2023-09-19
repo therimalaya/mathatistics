@@ -75,7 +75,7 @@ ul.task-list li input[type="checkbox"] {
     const options = {
       valueNames: ['listing-author','listing-date','listing-reading-time','listing-title','listing-subtitle',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] },{ data: ['listing-reading-time-sort'] }],
       
-      searchColumns: ["listing-freeze","listing-title-block-banner","listing-title","listing-descripion","listing-slug","listing-author","listing-type","listing-date","listing-categories","listing-tags","listing-path","listing-description","listing-filename","listing-file-modified","listing-reading-time","listing-toc","listing-draft"],
+      searchColumns: ["listing-freeze","listing-title-block-banner","listing-toc","listing-title","listing-descripion","listing-slug","listing-author","listing-type","listing-date","listing-categories","listing-tags","listing-path","listing-description","listing-filename","listing-file-modified","listing-reading-time","listing-subtitle","listing-code-overflow","listing-date-format","listing-bibliography","listing-citations-hover","listing-preview-links","listing-code-fold","listing-code-tools","listing-execute","listing-format","listing-editor_options","listing-nocite","listing-image"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -95,7 +95,7 @@ ul.task-list li input[type="checkbox"] {
 
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-</head>
+<link rel="alternate" type="application/rss+xml" title="Mathatistics" href="blog.xml"></head>
 
 <body class="nav-fixed">
 
@@ -125,12 +125,21 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Photo Gallery</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="./portfolio">
+ <span class="menu-text">Portfolio</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="./resume">
  <span class="menu-text">Resume</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./blog.html" aria-current="page">
  <span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="./blog.xml"><i class="bi bi-rss" role="img">
+</i> 
+ <span class="menu-text"></span></a>
   </li>  
   <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/therimalaya"><i class="bi bi-github" role="img">
@@ -152,7 +161,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(10)</span></div><div class="category" data-category="Knitr">Knitr <span class="quarto-category-count">(1)</span></div><div class="category" data-category="LaTeX">LaTeX <span class="quarto-category-count">(1)</span></div><div class="category" data-category="R">R <span class="quarto-category-count">(2)</span></div><div class="category" data-category="R IDE">R IDE <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RStudio">RStudio <span class="quarto-category-count">(1)</span></div><div class="category" data-category="statistics">statistics <span class="quarto-category-count">(1)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(11)</span></div><div class="category" data-category="Knitr">Knitr <span class="quarto-category-count">(1)</span></div><div class="category" data-category="LaTeX">LaTeX <span class="quarto-category-count">(1)</span></div><div class="category" data-category="R">R <span class="quarto-category-count">(2)</span></div><div class="category" data-category="R IDE">R IDE <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RStudio">RStudio <span class="quarto-category-count">(1)</span></div><div class="category" data-category="statistics">statistics <span class="quarto-category-count">(1)</span></div></div></div>
 <!-- main -->
 <main class="content column-page-left" id="quarto-document-content">
 
@@ -181,7 +190,30 @@ ul.task-list li input[type="checkbox"] {
 <div class="quarto-listing quarto-listing-container-custom" id="listing-listing">
 <main class="listing-content" id="listing-content">
 <div class="lst-row">
-<a href="./blog/posts/2022-12-02-age-adjusted-rates-in-epidemiology/index.html">
+<a href="./blog/posts/nordic-melanoma/index.html">
+<div class="lst-body">
+<p class="h4 lst-title">
+Melanoma Incidence in Nordic Countries
+</p>
+<div class="h5 lead lst-subtitle">
+<p>With special focus on Norway</p>
+</div>
+</div>
+<div class="lst-meta">
+<div class="lst-date">
+June 20, 2023
+</div>
+<div class="lst-author">
+Raju Rimal
+</div>
+<div class="lst-reading-time">
+7 min
+</div>
+</div>
+</a><p><a href="./blog/posts/nordic-melanoma/index.html"></a></p>
+</div>
+<div class="lst-row">
+<a href="./blog/posts/age-adjusted-rates/index.html">
 <div class="lst-body">
 <p class="h4 lst-title">
 Age Adjusted Rates in Epidemiology
@@ -198,7 +230,7 @@ Raju Rimal
 8 min
 </div>
 </div>
-</a><p><a href="./blog/posts/2022-12-02-age-adjusted-rates-in-epidemiology/index.html"></a></p>
+</a><p><a href="./blog/posts/age-adjusted-rates/index.html"></a></p>
 </div>
 <div class="lst-row">
 <a href="./blog/posts/2022-03-18-convert-list-to-array/index.html">
