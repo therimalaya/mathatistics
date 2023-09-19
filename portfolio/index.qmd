@@ -2,7 +2,7 @@
 title: My Portfolio
 format:
   html:
-    toc: false
+    toc: true
     css: style.css
 search: false
 lightbox: auto

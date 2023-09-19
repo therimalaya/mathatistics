@@ -2,6 +2,7 @@
 title: "Blog"
 subtitle: "A window of my learning experience"
 listing:
+  feed: true
   template: listing.ejs
   contents: blog
   sort: "date desc"

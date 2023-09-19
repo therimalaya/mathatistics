@@ -3,6 +3,7 @@ project:
   output-dir: docs
 
 website:
+  site-url: "https://mathaw.cloudrimalaya.com"
   title: Mathatistics
   description: My personal blog where I share my experiences and my learning journey.
   favicon: images/mathatistics.svg
@@ -23,6 +24,8 @@ website:
         text: Resume
       - href: blog.qmd
         text: Blog
+      - icon: rss
+        href: blog.xml
     tools:
       - icon: github
         href: https://github.com/therimalaya

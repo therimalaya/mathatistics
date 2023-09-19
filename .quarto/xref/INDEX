@@ -70,5 +70,11 @@
   },
   "portfolio/index.qmd": {
     "index.html": "1ca3f5c9"
+  },
+  "blog/posts/nordic-melanoma/index.qmd": {
+    "index.html": "e72c6f8b"
+  },
+  "blog/posts/age-adjusted-rates/index.qmd": {
+    "index.html": "bde51618"
   }
 }

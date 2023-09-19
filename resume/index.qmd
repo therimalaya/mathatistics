@@ -1,5 +1,10 @@
 ---
 page-layout: full
+format:
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: right
 ---
 
 ```{r}
