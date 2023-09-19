@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  site-url: "https://mathaw.cloudrimalaya.com"
+  site-url: "https://mathatistics.com"
   title: Mathatistics
   description: My personal blog where I share my experiences and my learning journey.
   favicon: images/mathatistics.svg
