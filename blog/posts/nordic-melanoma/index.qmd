@@ -1,0 +1,420 @@
+---
+title: "Melanoma Incidence in Nordic Countries"
+subtitle: "With special focus on Norway"
+author: "Raju Rimal"
+date: "20 June, 2023"
+code-overflow: scroll
+date-format: "DD MMMM YYYY"
+bibliography: References.bib
+citations-hover: true
+preview-links: true
+code-fold: true
+code-tools: 
+  toggle: true
+execute: 
+  warning: false
+format: 
+  html:
+    css: style.css
+editor_options: 
+  chunk_output_type: console
+nocite: "@*"
+---
+
+```{r}
+#| include: false
+pkgs <- c(
+  "ggplot2", "data.table", "purrr", "gt", 
+  "jsonlite", "DT", "segmented"
+)
+for (pkg in pkgs) require(pkg, character.only = TRUE)
+options(
+  digits = 4,
+  scipen = 4
+)
+```
+
+
+## Introduction
+Cutaneous melanoma (CM) is the most aggressive and lethal form of skin cancer. Melanoma can be cured if caught and treated early but if left untreated, it may spread to other parts and can be fatal. In the recent years, melanoma has increased dramatically in fair skinned population worldwide including Nordic countries like Norway, Denmark, and Sweden. Norway is ranked fifth in incidence and third in mortality worldwide. This increase can be an effect of increased awareness in general public and health care provider.
+
+This article explores ***melanoma incidence*** and ***mortality*** in nordic countries by ***sex*** and their ***trend*** over 40-years period from 1980--2020. Further, I try to step through the analysis process from data collection to create plots and tables.
+
+## Data Preparation
+
+Data on melanoma were obtained from NORDCAN [@nordcan-2023, @engholm_nordcan_2010], Association of the Nordic Cancer Registries, IARC. Using NORDCAN 2.0 API^[`https://gco.iarc.fr/gateway_prod/api/nordcan/v2/92/data/population/{type}/{sex}/({country})/({cancer})/?ages_group=5_17&year_start=1980&year_end=2020&year_grouped=0`] crude and age-adjusted rates were downloaded as JSON and converted to tabular data for further analysis. R[@r_core_team_r_2020] software was used for data gathering, cleanup, analysis, and plotting.
+
+The API endpoint has four placeholder `type`, `sex`, `country`, and `cancer` following design was used to create individual endpoint. These individual url are used to download the JSON file as list in R.
+
+::: panel-tabset
+
+### Data API {.data-api}
+
+```{r}
+#| code-summary: Code for preparing download URL
+#| 
+design_map <- list(
+  sex = c(Male = 1, Female = 2),
+  type = c(Incidence = 0, Mortality = 1),
+  cancer = c(Melanoma = 290),
+  country = c(
+    Denmark = 208, Finland = 246, Iceland = 352,
+    Norway = 578, Sweden = 752
+  )
+)
+label_values <- function(data, label_map, var) {
+  label_vec <- label_map[[var]]
+  label <- `names<-`(names(label_vec), label_vec)
+  data[[var]] <- data[, label[as.character(get(var))]]
+  return(data)
+}
+
+design <- CJ(
+  sex = 1:2,
+  type = 0:1,
+  cancer = 290,
+  country = c(208, 246, 352, 578, 752)
+)
+design[, url := glue::glue_data(.SD, 
+  "https://gco.iarc.fr/gateway_prod/api/nordcan/v2/92/data/population/{type}/{sex}/({country})/({cancer})/?ages_group=5_17&year_start=1980&year_end=2020&year_grouped=0"
+)]
+design <- design %>% 
+  label_values(design_map, "sex") %>% 
+  label_values(design_map, "type") %>% 
+  label_values(design_map, "cancer") %>% 
+  label_values(design_map, "country")
+```
+
+API URL:
+: `https://gco.iarc.fr/gateway_prod/api/nordcan/v2/92/data/population/{type}/{sex}/({country})/({cancer})/?ages_group=5_17&year_start=1980&year_end=2020&year_grouped=0`
+
+Replacing the placeholders `type` (Incidence: 0, Mortality: 1), `sex` (Male: 1, Female: 2), `country` (Denmark: 208, Finland: 246, Iceland: 352, Norway: 578, and Sweden: 752), and `cancer` (Melanoma: 290) prepare the data API.
+
+
+```{r}
+#| echo: false
+#| include: false
+gt::gt(
+  design, 
+  rowname_col = "country", 
+  groupname_col = c("sex", "type"),
+) %>% gt::cols_hide("cancer") %>% 
+  gt::cols_align(align = "right", columns = c(country)) %>% 
+  gt::cols_align(align = "left", columns = c(url)) %>% 
+  gt::tab_style(
+    style = gt::cell_text(
+      font = "monospace",
+      size = "smaller"
+    ),
+    locations = gt::cells_body(columns = c(url))
+  ) %>% 
+  gt::cols_label(url ~ "API Endpoint") %>% 
+  gt::tab_options(
+    row_group.font.weight = "bold",
+    column_labels.font.weight = "bold",
+    container.height = "500px"
+  )
+```
+
+### Sample JSON 
+
+```{ojs}
+//| code-summary: JSON object
+json_data = await FileAttachment("Data/nordcan.json").json()
+json_data[0]
+```
+
+### Data download
+
+```{r}
+#| code-summary: Code for data download
+if (!file.exists("Data/nordcan-json.Rds")) {
+  design[, data := map(url, ~read_json(.x) %>% pluck("dataset"))]
+  saveRDS(design, file = "Data/nordcan-json.Rds")
+} else {
+  design <- readRDS("Data/nordcan-json.Rds")
+}
+design[, .(sex, type, country, data)]
+```
+
+### Data Preparation
+
+```{r}
+#| code-summary: Rate data frame
+rate_df <- design[, map_df(data, function(dta) {
+  out <- data.table(
+    year = map_int(dta, "year"),
+    asr_w = map_dbl(dta, "asr"),
+    asr_e = map_dbl(dta, "asr_e"),
+    asr_n = map_dbl(dta, "asr_n"),
+    crude_rate = map_dbl(dta, "crude_rate"),
+    count = map_dbl(dta, "total"),
+    population = map_dbl(dta, "total_pop"),
+    cum_risk = map(dta, "cum_risk") %>% 
+      unlist()
+  )
+  if ("cum_risk" %in% names(out)) {
+    out[, cum_risk := as.numeric(cum_risk)]
+  }
+  return(out)
+}), by = .(sex, type, country)]
+```
+
+```{r}
+#| echo: false
+#| code-fold: false
+str(rate_df)
+```
+
+```{r}
+#| code-summary: Rate by age
+rate_by_age <- design[, map_df(data, function(dta) {
+  year <- map_int(dta, "year")
+  count_df <- map_df(dta, "ages") %>% 
+    as.data.table() %>%
+    cbind(year = year) %>% 
+    melt.data.table(
+      id.vars = "year",
+      variable.name = "age_group",
+      value.name = "count"
+    )
+  pop_df <- map_df(dta, "populations") %>% 
+    as.data.table() %>%
+    cbind(year = year) %>% 
+    melt.data.table(
+      id.vars = "year",
+      variable.name = "age_group",
+      value.name = "population"
+    )
+  asr_df <- map_df(dta, "age_specific_rate") %>% 
+    modify(as.numeric) %>% 
+    as.data.table() %>%
+    cbind(year = as.numeric(year)) %>% 
+    melt.data.table(
+      id.vars = "year",
+      variable.name = "age_group",
+      value.name = "asr"
+    )
+  out <- reduce(
+    list(count_df, pop_df, asr_df),
+    merge.data.table,
+    by = c("year", "age_group")
+  )
+  age_lbl <- paste(
+    seq(0, 85, 5),
+    seq(0, 85, 5) + 4,
+    sep = "-"
+  )
+  age_lbl[length(age_lbl)] <- "85+"
+  names(age_lbl) <- 1:18
+  
+  out[, age_group := age_lbl[age_group]]
+  out[, year := as.integer(year)]
+  out[, count := as.integer(count)]
+  out[, population := as.integer(population)]
+  out[, asr := as.numeric(asr)]
+  return(out[])
+}), by = .(sex, type, country)]
+```
+
+```{r}
+#| echo: false
+#| code-fold: false
+str(rate_by_age)
+```
+
+:::
+
+## Analysis
+
+For the following analysis, crude rates were used in visualization and modelling. Stratified by `sex`, `country` and `type` following plots presents the the `crude_rate` over the `year` of diagnosis. Additionally, using `count` and `population`, a poisson regression model (@eq-poisson-model-1) was fitted.
+
+$$
+\begin{align}
+\log\left(\frac{\lambda}{Y}\right) &= \beta_0 + \beta_1 x + \varepsilon \\
+\text{equivalently, } \log\left(\lambda\right) &= \beta_0 + \beta_1 x + \log(Y) + \varepsilon
+\end{align} 
+$$ {#eq-poisson-model-1}
+
+where, $\lambda$ is the number of events (`count`), $Y$ is the number of exposed (`population`) and $x$ is the `year` of diagnosis.
+
+Additionally, using segmented regression the change points in the trend was identified and the annual percentage change (APC) and average annual percentage change (AAPC) in crude rate were calculated. For each strata, following R-code for poisson regression model and segmented regression model were used.
+
+```{r}
+#| code-summary: Data within each strata
+nested_df <- rate_df[, .(
+  data = list(.SD)
+), by = .(sex, type, country)]
+head(nested_df)
+```
+
+::: {.callout-note icon="false"}
+### Poisson regression model
+```r
+model <- glm(
+  count ~ year + offset(log(population)),
+  data = rate_df,
+  family = poisson(link = "log")
+)
+```
+
+:::
+
+::: {.callout-note icon="false"}
+### Segmented regression model
+```r
+sgmt_model <- segmented(model, npsi = 2)
+```
+
+:::
+
+```{r}
+#| code-summary: Poisson and segmented fit
+#| warning: false
+fitted_df <- nested_df[, map_df(data, function(dta) {
+  fit <- glm(
+    count ~ year + offset(log(population)),
+    family = poisson(link = "log"),
+    data = dta
+  )
+  sgmt_fit <- segmented(fit, npsi = 2)
+
+  data.table(fit = list(fit), sgmt_fit = list(sgmt_fit))
+}), by = .(sex, type, country)]
+head(fitted_df)
+```
+
+Following plots highlighting Norway and Finland for comparison show a higher melanoma incidence and mortality rate in Norway compared to Finland. A plateau was observed in melanoma incidence in Norway in both male and female.  
+
+::: panel-tabset
+
+### Crude rate
+
+![](Plots/Line-Nor-Fin.svg)
+
+### Poisson fit
+
+![](Plots/GLM-Nor-Fin.svg)
+
+### Segmented fit
+
+![](Plots/Sgmt-Nor-Fin.svg)
+
+### All countries
+
+::: panel-tabset
+
+### Poisson fit
+
+![](Plots/GLM-all.svg)
+
+### Segmented fit
+
+![](Plots/Sgmt-all.svg)
+
+:::
+:::
+
+- Norway has higher melanoma incidence and mortality than Finland.
+- Finland has lowest melanoma incidence and mortality in both sexes
+- Norway has highest melanoma mortality followed by Sweden in both sexes
+- Denmark has surpassed both Norway and Sweden in melanoma incidence in the recent years
+- A plateau period was observed in melanoma incidence in Norway.
+- Most countries has raise in melanoma incidence after 2005.
+- A declining melanoma moratlity was observed in all countries in recent years. 
+
+
+## Model {.smaller}
+
+### Annual percentge change (APC)
+
+![](Plots/model-summary-plot.svg){width="100%"}
+
+### APC within segments
+
+```{r}
+a_apc <- readRDS("Results/APC.Rds")
+apc <- copy(a_apc[[1]])
+aapc <- copy(a_apc[[2]])
+apc[, label_period := glue::glue_data(.SD, "{label}<br>{psi}")]
+apc[, segment := gsub("slope", "", segment)]
+```
+
+```{r}
+apc[country %in% c("Norway", "Denmark")] %>% 
+  dcast.data.table(
+  country + segment ~ type + sex,
+  value.var = "label_period"
+) %>% gt::gt(
+  id = "apc-table",
+  rowname_col = "segment",
+  groupname_col = "country"
+) %>% gt::tab_spanner_delim("_") %>% 
+  gt::fmt_markdown(everything()) %>% 
+  gt::sub_missing(everything(), missing_text = "-") %>%
+  gt::tab_stubhead("Segment") %>% 
+  gt::tab_options(
+    data_row.padding = "0px",
+    table.width = "100%",
+    table.font.size = "small",
+    column_labels.font.weight = "bold",
+    row_group.font.weight = "bold"
+  )
+```
+
+## Model {.smaller}
+
+**Incidence model:**
+
+```{r}
+#| echo: true
+#| code-fold: show
+mdl_inc <- glm(
+  data = rate_df,
+  formula = count ~ year + sex + country,
+  offset = log(population),
+  family = poisson(link = "log"),
+  subset = type == "Incidence"
+)
+```
+
+**Mortality model**
+
+```{r}
+#| echo: true
+#| code-fold: show
+mdl_mor <- glm(
+  data = rate_df,
+  formula = count ~ year + sex + country,
+  offset = log(population),
+  family = poisson(link = "log"),
+  subset = type == "Mortality"
+)
+```
+
+### Incidence model summary
+```{r, prompt=FALSE, comment = ""}
+#| echo: true
+broom::tidy(mdl_inc, conf.int = TRUE, exponentiate = TRUE) %>% 
+  modify_at(c(2:4, 6:7), round, 3)
+```
+
+### Mortality model summary
+```{r, prompt=FALSE, comment = ""}
+#| echo: true
+broom::tidy(mdl_mor, conf.int = TRUE, exponentiate = TRUE) %>% 
+  modify_at(c(2:4, 6:7), round, 3)
+```
+
+
+## Summary 
+
+- Melanoma incidence and moratlity is increasing in all countries
+- Norway has highest mortality rate through out the period and has highest increase in both incidence and mortality.
+- Melanoma incidence increased rapidly in Denmark between 2002 and 2011 in women and 2004-2009 in men surpassing Norway.
+- Mortality is decreasing in all countries in recent period.
+
+## References
+
+::: {#refs}
+:::
