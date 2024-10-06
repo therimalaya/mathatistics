@@ -6,6 +6,7 @@ map_df(data$languages, pluck, 1) %>%
   gt::tab_options(
     table.width = "100%",
     stub.font.weight = "bold",
-    column_labels.font.weight = "bold"
+    column_labels.font.weight = "bold",
+    table.background.color = "transparent"
   )
 ```

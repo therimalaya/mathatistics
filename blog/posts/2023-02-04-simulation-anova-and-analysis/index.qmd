@@ -1,7 +1,7 @@
 ---
 title: "Simulating data for ANOVA similar to existing dataset for analysis"
 author: Raju Rimal
-date: "`r Sys.Date()`"
+date: "2023-02-04"
 draft: true
 tags:
   - Statistics

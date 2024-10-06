@@ -1,8 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=WindSong');
 
 /*-- scss:defaults --*/
+$link-color: #39729E;;
 
 /* css styles */
+a {
+  text-decoration: none;
+}
+
 .huge-cursive {
   font-family: WindSong;
   font-size: 72px;
@@ -11,7 +16,7 @@
 }
 
 .about-contents .lead p {
-  font-size: 90%;
+  font-size: 80%;
 }
 
 div.quarto-about-trestles {
@@ -285,7 +290,7 @@ div.quarto-about-trestles {
       padding: 0;
       grid-row-gap: 10px;
       margin: 0;
-      background: lightsteelblue;
+      border: 1px solid lightsteelblue;
       padding: 15px;
 
       & li::before {
@@ -293,7 +298,7 @@ div.quarto-about-trestles {
         content: "";
         height: 12px;
         width: 12px;
-        border: 2px solid #212529;
+        border: 2px solid var(--quarto-body-color);
         margin-right: 10px;
         border-radius: 50%;
       }
@@ -316,7 +321,7 @@ div.quarto-about-trestles {
         content: "";
         height: 12px;
         width: 12px;
-        border: 2px solid #212529;
+        border: 2px solid var(--quarto-body-color);
         margin-right: 10px;
         border-radius: 50%;
       }
@@ -325,11 +330,11 @@ div.quarto-about-trestles {
   }
   
   & section#scientific-skills .col ul {
-    background: lightblue;
+    border: 1px solid lightblue;
   }
 
   & section#interpersonal-skills .col ul {
-    background: #C9ECEA;
+    border: 1px solid #C9ECEA;
   }
 
 
@@ -360,4 +365,9 @@ div.quarto-about-trestles {
     padding-left: 10px;
     padding-right: 10px;
   }
+}
+
+/* gt-table */
+table.gt_table :is(td, th) {
+    color: var(--quarto-body-color)!important;
 }

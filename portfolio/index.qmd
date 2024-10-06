@@ -10,6 +10,7 @@ bibliography: references.bib
 link-citations: true
 link-external-newwindow: true
 nocite: "@*"
+csl: elsevier-with-titles.csl
 execute:
   echo: false
 description: |
@@ -24,25 +25,6 @@ library(htmltools)
 library(purrr)
 library(yaml)
 ```
-
-::: publications
-## Publications
-
-```{r}
-#| output: asis
-#| eval: false 
-refs <- RefManageR::ReadBib("references.bib")
-map(names(refs), function(.name) {
-  ref <- refs[[.name]]
-  tags$details(
-    tags$summary(refs[[.name]]$title),
-    p(gsub("\\[.*\\] ", "", paste(capture.output(ref), collapse = "\n")))
-  )
-}) %>% htmltools::as.tags()
-```
-::: {#refs}
-:::
-:::
 
 ::: projects
 ## Apps and Packages
@@ -192,20 +174,14 @@ This one day lecture covers following topics,
 ```{r}
 #| output: asis
 #| echo: false
-items <- yaml::read_yaml("conferences.yaml") %>% 
-  pluck("assorted")
+items <- yaml::read_yaml("conferences.yaml") %>% pluck("assorted")
 for (item in items) {
-cat("::: {.g-col-4 width='100%' height='auto' style='background: #f0f0f0;'}\n")
-
+cat("::: {.g-col-4 width='100%' height='auto'}\n")
 cat(glue::glue("![](images/{item$img})"), "\n")
-
 cat(":::\n")
-
-cat("::: {.g-col-8 width='100%' height='auto' style='background: #f0f0f0; padding: 10px 15px;'}\n")
-
+cat("::: {.g-col-8 width='100%' height='auto'}\n")
 cat(glue::glue("##### [{item$title}]({item$url})"), "\n")
 cat(glue::glue("{item$address}, {item$date}"), "\n")
-
 cat(":::\n")
 
 }
@@ -218,3 +194,25 @@ cat(":::\n")
 :::
 
 
+::: publications
+## Publications
+
+```{r}
+#| output: asis
+#| eval: false 
+refs <- RefManageR::ReadBib("references.bib")
+map(names(refs), function(.name) {
+  ref <- refs[[.name]]
+  tags$details(
+    tags$summary(refs[[.name]]$title),
+    markdown::mark(gsub(
+      "\\[.*\\] ", "", 
+      paste(capture.output(ref), collapse = "\n")
+    ))
+  )
+}) %>% htmltools::as.tags()
+```
+
+::: {#refs}
+:::
+:::

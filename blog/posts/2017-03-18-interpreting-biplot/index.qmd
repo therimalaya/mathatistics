@@ -3,8 +3,11 @@ title  : Interpreting Biplot
 slug   : interpreting-biplot
 author : therimalaya
 date   : 2017-03-18
+code-fold: true
 categories:
   - statistics
+  - machine learning
+  - mathematics
 tags:
   - biplot
   - interpretation of biplot
@@ -12,27 +15,238 @@ tags:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(comment = NA, warning = FALSE, fig.align = "center", fig.asp = 0.7, out.width = "100%")
+knitr::opts_chunk$set(
+  comment = NA, 
+  warning = FALSE, 
+  fig.align = "center", 
+  fig.asp = 0.7, 
+  out.width = "100%"
+)
+
+library(tidytable)
+library(ggplot2)
 ```
 
-Obviously, the name suggests itself that there are two aspect of data plotted in latent scale. Biplot in case of principal component analysis (PCA) plot both variable and observation in latent scale (scores and loadings). Throughout this article, I will use [`USArrests`](https://www.rdocumentation.org/packages/datasets/versions/3.3.2/topics/USArrests) data from `datasets` package. Lets fit a PCA model using `princomp` function. However, this can also be done using `prcomp`. The later one uses singular value decomposition while the former one uses eigenvalue decomposition. Here I have used correlation rather than covariance to compute principal components because there are large values in case of `Murder` and `UrbanPop`
+A biplot is a powerful graphical tool that represents data in two dimensions, where both the observations and variables are represented. Biplots are particularly useful for multivariate data, allowing users to examine relationships between variables and identify patterns.
 
-```{r get-records, fig.cap="Variance of each components and the proportaion of the total variance explained for each additional components is displayed as label"}
-pc.a <- princomp(USArrests, cor = TRUE)
-plot(pc.a, type = "lines", pch = 22, bg = "grey",
-     main = "Variance explained by each componets in PCA")
-text(1:4, pc.a$sdev^2, pos = 4,
-     labels = round(cumsum(pls::explvar(pc.a)), 1))
-box()
+Consider a data matrix $\mathbf{X}_{n\times p}$ with $p$ variables and $n$ observations. To explore the data further with biplot, principal component analysis (PCA) is used here. 
+
+::: {.columns}
+
+::: {.column}
+![](images/Img-1.jpg){width="90%"}
+:::
+
+::: {.column}
+
+$$
+\begin{pmatrix}
+\mathbf{x}_1 \\ \mathbf{x}_2 \\ \vdots \\ \mathbf{x}_p
+\end{pmatrix}^T =
+\begin{pmatrix}
+x_{11} & x_{12} & \ldots & x_{1p} \\
+x_{21} & x_{22} & \ldots & x_{2p} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{n1} & x_{n2} & \ldots & x_{np}
+\end{pmatrix}
+$$
+where $\mathbf{x}_{i} = \begin{pmatrix}x_{1i} & \ldots & x_{ni}\end{pmatrix}$ is the i<sup>th</sup> variable.
+
+:::
+
+:::
+
+
+Principal component analysis (PCA) compresses the variance of the data matrix to create a new set of orthogonal (linearly independent) variables $\mathbf{Z} = \begin{pmatrix}\mathbf{z}_1 & \mathbf{z}_2 & \ldots & \mathbf{z}_q\end{pmatrix}$, where $q = \min(n, p)$, often termed as principal components (PC) or scores. In PCA, the most variation is captured by the first component and rest in the subsequent components in decreasing order. In other words, the first principal component ($\mathbf{z}_1$) captures the highest variation and second principal component ($\mathbf{z}_2$) captures the maximum of remaing variation and so on.
+ 
+::: {.columns}
+::: {.column}
+![](images/Img-2.jpg){width="95%"}
+:::
+::: {.column}
+$$\begin{aligned}
+\mathbf{z}_{1} &= w_{11}\mathbf{x}_{1} + \ldots + w_{1p}\mathbf{x}_{p} \\
+\mathbf{z}_{2} &= w_{21}\mathbf{x}_{1} + \ldots + w_{2p}\mathbf{x}_{p} \\
+\vdots \\
+\mathbf{z}_{q} &= w_{q1}\mathbf{x}_{1} + \ldots + w_{qp}\mathbf{x}_{p} \\
+\end{aligned}
+$${#eq-pca}
+
+:::
+:::
+
+We can use eigenvalue decomposition or singular value decompostion for this purpose.
+
+These principle components are created using linear combination of the original variables. For example, $\mathbf{z}_1 = w_{11}\mathbf{x}_1 + \ldots + w_{1p}\mathbf{x}_p$ and similarly for $\mathbf{z}_2, \ldots, \mathbf{z}_q$. Here we can estimate weights $w_{ij}$, where $i = 1 \ldots q$ and $j = 1 \ldots p$ using [eigenvalue decomposition](https://en.wikipedia.org/wiki/Eigendecomposition_of_a_matrix) or [singular value  (SVD)](https://en.wikipedia.org/wiki/Singular_value_decomposition). These weights are also refered as loading or the matrix of these weights as rotation matrix.
+
+Biplot plots the scores from two principal components together with loadings (weight) for each variables in the same plot. The following example uses [`USArrests`](https://www.rdocumentation.org/packages/datasets/versions/3.3.2/topics/USArrests) data from `datasets` package in R. The dataset contains the number of arrests per 100,000 residents for assault, murder, and rape in each of the 50 US states in 1973.
+
+Two functions `prcomp` and `princomp` in R performs the principal component analysis. The function `prcomp` uses SVD on data matrix $\mathbf{X}$ while `princomp` uses eigenvalue decomposition on covariance or correlation matrix of the data matrix. We will use `prcomp` for our example.
+
+### Dataset: USArrest
+
+```{r}
+USArrests <- as_tidytable(USArrests, .keep_rownames = "State")
+head(USArrests)
 ```
 
-Here, with three components, we have captured 95.7 percent of total variation present in `USArrests` dataset. Lets get the biplot and try to understand it.
+### Principal component analysis
 
-```{r biplot, message=FALSE, warning=FALSE, }
-library(ggfortify)
-autoplot(
-  pc.a, label = T, shape = FALSE,
-  loadings = TRUE, loadings.label = TRUE,
-  label.size = 3.5, label.repel = TRUE)
+```{r}
+pca <- prcomp(USArrests[, -1], scale. = TRUE)
+str(pca)
 ```
+
+::: panel-tabset
+
+### Biplot
+
+```{r}
+#| fig-asp: 1
+score_df <- as_tidytable(pca$x) %>% 
+  mutate(State = USArrests[, State])
+
+loading_df <- as_tidytable(
+  pca$rotation, 
+  .keep_rownames = "Variable"
+)
+
+ggplot(score_df, aes(PC1, PC2)) +
+  geom_hline(
+    yintercept = 0, 
+    color = "royalblue", 
+    linetype = "dashed"
+  ) +
+  geom_vline(
+    xintercept = 0, 
+    color = "royalblue", 
+    linetype = "dashed"
+  ) +
+  geom_segment(
+    data = loading_df,
+    aes(
+      x = 0, xend = PC1 * 2,
+      y = 0, yend = PC2 * 2
+    ),
+    color = "firebrick",
+    arrow = arrow(length = unit(2, "mm"))
+  ) +
+  geom_text(
+    data = loading_df,
+    aes(
+      x = PC1 * 2.6, 
+      y = PC2 * 2.6, 
+      label = Variable
+    ),
+    color = "firebrick",
+    size = rel(5)
+  ) +
+  geom_text(
+    aes(label = State), 
+    check_overlap = TRUE,
+    color = "gray50"
+  ) +
+  theme_minimal(base_size = 18) +
+  theme(
+    panel.background = element_rect(color = "gray50")
+  )
+```
+
+### Variance explained
+```{r}
+summary(pca)
+
+var_df <- tidytable(
+  PC = paste0("PC", 1:length(pca$sdev)),
+  Variance = pca$sdev^2
+)
+ggplot(var_df, aes(PC, Variance)) +
+  geom_line(group = 1) +
+  geom_point(
+    stroke = 1, size = 3, 
+    shape = 21, fill = "whitesmoke"
+  ) +
+  theme_minimal(base_size = 18) +
+  theme(
+    panel.background = element_rect(color = "gray20")
+  )
+```
+
+Here we see that more than 87% of variation in $\mathbf{X}$ was captured by first two principal components (65% by the first and 25% by the second component).
+
+:::
+
+Now lets compare the scores from the first two components, observations and variables in the data matrix. From the `USArrests` data, lets look at the top five states with highest and lowest arrest for each of these crimes.
+
+::: panel-tabset
+## States with highest arrests
+
+::: panel-tabset
+
+### Murder
+
+```{r}
+USArrests %>% arrange(-Murder) %>% top_n()
+```
+
+### Assault
+
+```{r}
+USArrests %>% arrange(-Assault) %>% top_n()
+```
+
+### UrbanPop
+
+```{r}
+USArrests %>% arrange(-UrbanPop) %>% top_n()
+```
+
+### Rape
+
+```{r}
+USArrests %>% arrange(-Rape) %>% top_n()
+```
+
+
+:::
+
+## States with lowest arrests
+
+::: panel-tabset
+
+### Murder
+
+```{r}
+USArrests %>% arrange(Murder) %>% top_n()
+```
+
+### Assault
+
+```{r}
+USArrests %>% arrange(Assault) %>% top_n()
+```
+
+### UrbanPop
+
+```{r}
+USArrests %>% arrange(UrbanPop) %>% top_n()
+```
+
+### Rape
+
+```{r}
+USArrests %>% arrange(Rape) %>% top_n()
+```
+
+:::
+
+:::
+
+Comparing these highest and lowest arrests with the biplot, we can see a pattern. The weights corresponding to PC1 for all the variables are negative and are directed towards states like Florida, Nevada, and California. These states have the highest number of arrests for all of these crimes where as states that are in the oppositve direction like Iowa, North Dakota, and Vermont have the lowest arrest.
+
+Similarly, UrbanPop have the highest weights corresponding to PC2 so the states in that direction such as California, Hawaii, and New Jersey have highest arrest related to UrbanPop. The states in the opposite direction, i.e. with negative PC2 scores such as Mississippi, North Carolina, Vermont, and South Carolina have the lowest arrest related to UrbanPop.
+
+The weights for all variables are negative and towards states like . So in our data these states must have the highest arrests in all these crimes where as states like New Dakota, Vermont, and Iowa have the lowest arrests.
+
+
 

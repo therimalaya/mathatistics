@@ -29,9 +29,9 @@ Hi,
 :::
 
 ::: lead
-I am a postdoctoral fellow at University of Oslo working on analyzing melanoma incidence and survival trend in Norway. My research interest lies in the intersection of statistics, data visualization, web and programming.
+I am a statistician and data scientist currently engaged in a project analyzing melanoma incidence and survival trend in Norway. My research interest lies in the intersection of statistics, data visualization, web and programming.
 
-I live in Drammen, a beautiful city in Norway, with my wife and a son. I spend my personal time mostly cycling, hiking and taking pictures. I also like listining music and sometimes binge watching movies & serial.
+I live in Drammen, a beautiful city in Norway, with my wife and a son. I spend my personal time mostly cycling, hiking and taking pictures. I also like listining music and sometimes binge watching movies.
 
 :::
 
