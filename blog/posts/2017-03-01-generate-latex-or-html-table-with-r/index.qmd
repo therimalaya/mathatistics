@@ -1,7 +1,9 @@
 ---
 title: Create LaTeX, HTML and Markdown tables in R
 slug: latex-html-tables-in-R
-author: Raju Rimal
+author: TheRimalaya
+draft: true
+code-fold: true
 date: 2017-03-01
 tags:
   - LaTeX
@@ -17,13 +19,16 @@ knitr::opts_chunk$set(
 
 R can do data analysis and it can create beautiful reports. You can build all these documents directly in R using `rmarkdown` which is powered by powerful `pandoc`. In lots of occasions, user just wants to get some output format of tables that we can use in other platform such as Microsoft word, LaTeX, HTML or Markdown. Here I will discuss about some packages that helps us doing so including `xtable`, `pander`, `knitr`, `stargazer` and `tables`. I will use a sample dataset and a summary output from a linear model fit and convert them into various format. Although each of them need their own elaborate discussion, I will just use very basics of them since one can always go and dig into the help file for any details.
 
-## Creating Tables {.tabset}
+
+## Dataset: `mtcars`
 
 ```{r, echo = FALSE}
 mtcars <- head(mtcars, 5)
 ```
 
-### xtable {.tab}
+::: panel-tabset
+
+### xtable
 
 ```{r, results='asis'}
 xtable::print.xtable(
@@ -31,23 +36,37 @@ xtable::print.xtable(
 )
 ```
 
-### pander {.tab}
+### pander
 ```{r}
 pander::pander(mtcars)
 ```
 
-### knitr {.tab}
+### knitr
 ```{r}
 knitr::kable(mtcars)
 ```
 
 
-### tables {.tab}
+### tables
 ```{r}
 tables::as.tabular(mtcars)
 ```
 
+### gt
 
-## Exercise
+```{r}
+gt::gt(mtcars)
+```
 
-  1. Use the `mtcars` dataset, fit a linear model with `mpg` as response variable and `wt`,`hp` and `disp` as predictor variable. Generate a LaTeX table and HTML table for the fitted model using xtable.
+### kableExtra
+
+```{r}
+kableExtra::kbl(mtcars)
+```
+
+:::
+
+
+<!-- ## Exercise
+
+  1. Use the `mtcars` dataset, fit a linear model with `mpg` as response variable and `wt`,`hp` and `disp` as predictor variable. Generate a LaTeX table and HTML table for the fitted model using xtable. -->

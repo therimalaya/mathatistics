@@ -1,22 +1,25 @@
 ---
 title  : How ANOVA analyze the variance
 slug   : how-anova-analyze-the-variance
-author : therimalaya
+author : TheRimalaya
+code-fold: true
+date-modified: 2024-10-08
 date   : 2021-03-29
-tags:
+categories:
   - Statistics
   - ANOVA
+tags:
+  - Statistics
+  - Analysis of variance
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  echo = FALSE,
   comment = NA,
   out.width = "100%",
   dev = "svg"
 )
-library(data.table)
-library(purrr)
+library(tidytable)
 library(ggplot2)
 
 ggplot2::theme_set(ggthemes::theme_few() + theme(
@@ -26,156 +29,191 @@ ggplot2::theme_set(ggthemes::theme_few() + theme(
 set.seed(124)
 ```
 
+Analysis of Variance (ANOVA) is a powerful statistical tool used to analyze the variance among group means and determine whether these differences are statistically significant. It’s commonly used in various fields such as agriculture, biology, psychology, and more to test hypotheses about different groups. Below are some practical examples:
+
+- The effect of different diets on the growth of fishes
+- Comparing the height of three different species of a plant
+- The type of flour used for baking bread
+
+Data for ANOVA could be collected through designed experiments or by sampling from populations. This article helps explain how ANOVA analyzes variance and identifies situations when these differences are significant, using both simulated and real data.
 
 Often we Analysis of Variance (ANOVA) to analyze the variances to find if 
 different cases results in similar outcome and if the difference is significant. 
 Following are some simple examples,
 
-- The effect of different diets on growth of fishes
-- Comparing the height of three different species of a plant
-- Type of flour used for baking a bread
-
-These are some common examples where in some cases data are collected by setting 
-up an experiment and in other cases they are collected through sampling. 
-This article tries to explain how the ANOVA analyze the variance and in what 
-situation are they significant throught both simulated and real data.
-
 Consider the following model with $i=3$ groups and $j=n$ observations,
 
-$$y_{ij} = \mu + \tau_i + \varepsilon_{ij}, \; i = 1, 2, 3 
-\texttt{ and } j = 1, 2, \ldots n$$
+$$
+y_{ij} = \mu + \tau_i + \varepsilon_{ij}, \; i = 1, 2, 3 \texttt{ and } j = 1, 2, \ldots n
+$$
 
-here, $\tau_i$ is the effect corresponding to group $i$ and 
+where, $\tau_i$ represetns the effect corresponding to group $i$ and 
 $\varepsilon_{ij} \sim \mathrm{N}(0, \sigma^2)$, the usual assumption of 
-linear model. In order to understand how ANOVA finds the differences between 
-groups and how the group mean and their standard deviation influence the
-results from ANOVA, let us consider following four cases:
-
-Case 1
-: Similar group means with high variation within the groups
-
-Case 2
-: Similar group means with low variation within the groups
-
-Case 3
-: Distant group means with high variation within the groups
-
-Case 4
-: Distant group means with low variation within the groups
-
-## Simulating data resembling these cases
+linear model. In order to better understand how ANOVA finds the differences between groups and how the group mean and their standard deviation influence the results from ANOVA, we will explore the following four cases:
 
 ```{r}
-Design <- rbindlist(list(
+#| label: simulatin-design
+#| code-summary: Simultion design
+Design <- tidytable::bind_rows(
     Case1 = data.table(
-        Group = paste("G", 1:2, sep = ""),
-        Mean = c(6, 8),
-        SD = c(6, 8)
+        Group = paste("Group", 1:3, sep = ""),
+        Mean = c(10, 10, 10),
+        SD = c(5, 5, 5)
     ),
     Case2 = data.table(
-        Group = paste("G", 1:2, sep = ""),
-        Mean = c(6, 8),
-        SD = c(3, 4)
+        Group = paste("Group", 1:3, sep = ""),
+        Mean = c(10, 10, 10),
+        SD = c(1, 1, 1)
     ),
     Case3 = data.table(
-        Group = paste("G", 1:2, sep = ""),
-        Mean = c(8, 20),
-        SD = c(8, 20)
+        Group = paste("Group", 1:3, sep = ""),
+        Mean = c(5, 10, 15),
+        SD = c(5, 5, 5)
     ),
     Case4 = data.table(
-        Group = paste("G", 1:2, sep = ""),
-        Mean = c(8, 20),
-        SD = c(4, 10)
-    )
-), idcol = "Cases")
+        Group = paste("Group", 1:3, sep = ""),
+        Mean = c(5, 10, 15),
+        SD = c(1, 1, 1)
+    ), .id = "Cases")
 ```
+
+::: {.columns}
+::: {.column}
+
+- **Case 1:** Similar group means with high variation within the groups
+- **Case 2:** Similar group means with low variation within the groups
+- **Case 3:** Distant group means with high variation within the groups
+- **Case 4:** Distant group means with low variation within the groups
+
+:::
+::: {.column}
+
+```{r}
+#| echo: false
+pivot_wider(
+    .df = Design,
+    names_from = "Group", 
+    values_from = c("Mean", "SD"),
+    names_glue = "{Group}_{.value}"
+) %>% relocate(
+    "Cases", 
+    starts_with("Group1"),
+    starts_with("Group2"), 
+    starts_with("Group3")
+) %>% gt::gt() %>% 
+    gt::tab_spanner_delim("_")
+```
+
+:::
+:::
 
 ## Fitting ANOVA model for each cases
 ```{r}
-Model <- Design[, map2_df(Mean, SD, ~list(data.table(
-    Response = rnorm(25, .x, .y)
-))), by = .(Cases, Group)] %>% 
-.[, .(Data = list(.SD)), by = Cases] %>% 
-.[, Fit := map(Data, ~lm(Response ~ Group, data = .x))]
+#| code-summary: Simulate and fit ANOVA
+generate_data <- function(mean, sd, nobs = 50) {
+    Response <- rnorm(nobs, mean = mean, sd)
+    tidytable(ID = 1:nobs, Response = Response)
+}
+
+Model <- Design %>% 
+    mutate(Data = map2(Mean, SD, generate_data)) %>% 
+    unnest() %>%
+    nest(.by = "Cases") %>% 
+    mutate(fit = map(data, function(dta) {
+        lm(Response ~ Group, data = dta)
+    }))
+
+Model
 ```
 
-## Prepare data for plotting
+## Distribution of data
 
 ```{r}
-plot_data <- Model[, map_df(Fit, broom::augment), by = Cases]
+#| code-summary: Data distribution
+#| message: false
+#| warning: false
+#| fig-asp: 1
+
+Model[, map_df(fit, broom::augment), by = Cases] %>%
+  ggplot(aes(Response, Group)) +
+  geom_boxplot(
+    aes(fill = Group, color = Group), 
+    alpha = 0.25, width = 0.25
+  ) +
+  geom_point(aes(fill = Group),
+    position = position_jitter(height = 0.1),
+    shape = 21, size = 2, stroke = 0.25, alpha = 0.25
+  ) +
+  stat_summary(
+    fun = mean, geom = "point", aes(color = Group),
+    size = 2, shape = 21, fill = "whitesmoke", stroke = 0.75
+  ) +
+  facet_wrap(facets = vars(Cases), scales = "free_x") +
+  ggridges::geom_density_ridges(
+    aes(color = Group),
+    fill = NA,
+    panel_scaling = FALSE
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(
+    legend.position = "none"
+  )
 ```
 
+## Model comparison
 
 ```{r}
-ggplot(plot_data, aes(Response, Group)) +
-    geom_point(aes(fill = Group),
-        position = position_jitter(height = 0.1),
-        shape = 21, size = 2, stroke = 0.25, alpha = 0.25
-    ) +
-    stat_summary(
-        fun.data = mean_se, geom = "errorbar", aes(color = Group),
-        width = 0.2, size = 0.75
-    ) +
-    stat_summary(
-        fun = mean, geom = "point", aes(color = Group),
-        size = 2, shape = 21, fill = "whitesmoke", stroke = 0.75
-    ) +
-    facet_wrap(facets = vars(Cases), scales = "free_x") +
-    ggridges::geom_density_ridges(
-        aes(color = Group),
-        fill = NA,
-        panel_scaling = FALSE
-    ) +
-    scale_color_brewer(palette = "Set1") +
-    scale_fill_brewer(palette = "Set1")
-```
+#| code-summary: ANOVA for the four cases
+anova_result <- Model[, map_df(
+  .x = fit,
+  .f = ~ broom::tidy(anova(.x))
+), by = Cases] %>% rename(
+  DF = df,
+  SSE = sumsq,
+  MSE = meansq,
+  Statistic = statistic,
+  `p value` = p.value
+)
 
-```{r}
-ggplot(plot_data) +
-    geom_text(
-        data = Design, aes(
-            label = glue::glue("Mean: {Mean}, SD: {SD}"),
-            color = Group
-        ),
-        x = Inf, y = Inf,
-        hjust = 1.1,
-        vjust = rep(c(1.5, 3.5), 4),
-        show.legend = FALSE
-    ) +
-    geom_point(
-        aes(Response, Group, color = Group),
-        position = position_jitter(height = 0.1),
-        shape = 21, stroke = 0.5,
-        alpha = 0.5
-    ) +
-    ggridges::geom_density_ridges(
-        aes(Response, Group, color = Group),
-        scale = 0.9,
-        fill = NA
-    ) +
-    ggridges::geom_density_ridges(
-        aes(.fitted, Group, color = Group), 
-        linetype = "dashed",
-        scale = 0.9,
-        fill = NA
-    ) +
-    facet_wrap(
-        facets = vars(Cases),
-        dir = "v",
-        scales = "free_x"
-    ) +
-    scale_color_brewer(palette = "Set1") +
-    theme(
-        legend.position = "bottom"
-    ) +
-    labs(
-        x = "Response",
-        y = "Density",
-        linetype = NULL
+anova_result %>% 
+  mutate(
+    Cases = case_when(
+        Cases == "Case1" ~ "Case 1: Similar group means with high variation within the groups",
+        Cases == "Case2" ~ "Case 2: Similar group means with low variation within the groups",
+        Cases == "Case3" ~ "Case 3: Distant group means with high variation within the groups",
+        TRUE ~ "Case 4: Distant group means with low variation within the groups"
     )
+  ) %>% 
+  gt::gt(groupname_col = "Cases", rowname_col = "term") %>%
+  gt::fmt_number(columns = 4:6) %>%
+  gt::fmt_number(columns = 7, decimals = 4) %>% 
+  gt::sub_missing(missing_text = "") %>% 
+  gt::tab_options(
+    table.width = "100%",
+    row_group.font.weight = "600"
+  )
 ```
 
-## Discussion
+### Interpretetion
+
+::: panel-tabset
+
+#### Case 1
+The results show a high p-value, indicating no significant difference between the groups due to high within-group variability.
+
+#### Case 2
+Here, the p-value is still high, suggesting no significant difference, but the small variance within groups provides clearer insights compared to Case 1.
+
+#### Case 3
+Despite the high variation within groups, the distant group means lead to a low p-value, indicating statistically significant differences among the groups.
+
+#### Case 4
+With low within-group variation and distant means, the p-value remains extremely low, strongly indicating significant group differences.
+
+:::
+
+In conclusion, ANOVA helps determine if there are significant differences between multiple group means by comparing variances within groups to variances between groups. The power of ANOVA lies in its ability to detect even subtle differences when variations are minimal within groups.
 
 
 

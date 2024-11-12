@@ -1,0 +1,286 @@
+---
+title: Importing and Exporting data in R
+slug: importing-and-exporting-data-in-r
+author: TheRimalaya
+date: 2017-03-01
+date-modified: 2024-10-07
+categories: 
+  - Data Science Tutorials
+  - R Programming
+tags:  
+  - Import Data in R
+  - R Data Formats
+  - R Data Import Packages
+  - Open Data Sources
+  - Handling Data in R
+---
+
+Importing and loading data is a crucial skill in data analysis. R offers various methods to handle different data formats efficiently. This article covers the essential techniques for importing data into R, using datasets from different packages, and explores open data sources and useful resources.
+
+## Different Formats of Data
+
+Data comes in various formats, each suited for different scenarios:
+
+- **CSV (Comma Separated Values):** Simple text files where values are separated by commas.
+- **Excel:** Commonly used .xls and .xlsx files.
+- **SQL Databases:** Structured data stored in tables within relational databases.
+- **JSON (JavaScript Object Notation):** Lightweight data interchange format.
+- **HTML:** Webpage data.
+- **SPSS, SAS, Stata:** Formats used by specialized statistical software.
+- **RData and RDS:** Native R formats for storing R objects.
+
+## Data Available in Different Packages
+
+R comes with a plethora of packages that include built-in datasets, perfect for learning and practice:
+
+::: panel-tabset
+
+### datasets 
+Includes classic datasets like Iris, mtcars, and airquality.
+
+```{r}
+#| warning: false
+#| message: false
+library(datasets)
+data(iris)
+str(iris)
+```
+### ggplot2 
+Contains datasets such as `mpg` for practicing data visualization.
+
+```{r}
+#| warning: false
+#| message: false
+library(ggplot2)
+data(mpg)
+str(mpg)
+```
+
+### dplyr 
+Provides the `starwars` and `storms` datasets, useful for demonstrating data manipulation techniques.
+
+```{r}
+#| warning: false
+#| message: false
+library(dplyr)
+data(starwars)
+str(starwars)
+```
+
+### MASS 
+Offers datasets for applied statistics, including the Boston housing data.
+
+```{r}
+#| warning: false
+#| message: false
+library(MASS)
+data(Boston)
+str(Boston)
+```
+
+### carData 
+Contains datasets ideal for regression, ANOVA, and generalized linear models.
+
+```{r}
+#| warning: false
+#| message: false
+library(carData)
+data(MplsStops)
+str(MplsStops)
+```
+
+:::
+
+## Importing Different Data Formats into R
+
+Before diving into examples, let's introduce some useful packages for data import:
+
+- **haven:** For SPSS, SAS, and Stata files.
+- **data.table:** Efficient data manipulation and import.
+- **readxl:** For reading Excel files.
+- **jsonlite:** For importing JSON files.
+
+Here is how you can import different data formats into R:
+
+::: panel-tabset
+
+### CSV
+
+```{r}
+data <- read.csv("data/airtravel.csv")
+head(data)
+```
+
+### Excel
+
+```{r}
+library(readxl)
+data <- read_excel("data/Melanoma.xlsx")
+head(data)
+```
+
+### SQL
+
+```{r}
+library(DBI)
+con <- dbConnect(RSQLite::SQLite(), "data/medal.db")
+data <- dbGetQuery(con, "SELECT * FROM Olympic2024")
+head(data)
+```
+
+
+### JSON
+
+```{r}
+library(jsonlite)
+data <- fromJSON("data/sdg-goals.json")
+str(data, list.len = 2)
+```
+
+:::
+
+::: panel-tabset
+
+### HTML
+
+```{r}
+library(rvest)
+# url <- "https://en.wikipedia.org/wiki/Booker_Prize"
+url <- "data/Booker-Prize.html"
+data <- read_html(url) %>%
+    html_node(".wikitable") %>%
+    html_table()
+head(data)
+```
+
+### RData and RDS
+We can load RData file with `load` function and Rds file using `readRDS` function. RData file can contain multiple R objects and when loaded we can find the objects saved in RData file in R environment.
+
+```{r}
+load("data/cancer.rds")
+head(cancer)
+
+popmort <- readRDS("data/popmort.rds")
+str(popmort)
+```
+
+### SPSS
+
+```{r}
+library(haven)
+spss_file <- read_sav("data/melanoma.sav")
+head(spss_file)
+```
+
+### Stata
+
+```{r}
+stata_file <- read_dta("data/colon.dta")
+head(stata_file)
+```
+
+### SAS
+
+```{r}
+sas_file <- read_xpt("data/mpg.xpt")
+head(sas_file)
+```
+
+
+:::
+
+
+## Exporting Data to Different Formats in R
+
+R also allows you to export data to various formats:
+
+::: panel-tabset
+
+### CSV
+
+```R
+write.csv(data, "data.csv")
+```
+
+### Excel
+
+```R
+library(writexl)
+write_xlsx(data, "data.xlsx")
+```
+
+### SQL
+
+```R
+library(DBI)
+con <- dbConnect(RSQLite::SQLite(), "example.db")
+dbWriteTable(con, "tablename", data)
+```
+
+### JSON
+
+```R
+library(jsonlite)
+write_json(data, "data.json")
+```
+
+### HTML
+
+```R
+library(xml2)
+write_html(as_xml_document(as.character(data)), "data.html")
+```
+
+:::
+::: panel-tabset
+
+### RData and RDS
+
+```R
+save(data, file = "data.RData")
+saveRDS(data, "data.rds")
+```
+
+### SPSS
+
+```R
+library(haven)
+write_sav(data, "data.sav") # SPSS file
+```
+
+### Stata
+
+```R
+library(haven)
+write_dta(data, "data.dta") # Stata file
+```
+
+### SAS
+
+```R
+library(haven)
+write_xpt(data, "data.xpt") # SAS file
+```
+
+:::
+
+
+## Available Open Data
+
+There are numerous open data sources available for free use:
+
+- **[Kaggle](https://www.kaggle.com/datasets):** A platform for data science competitions with a vast array of datasets.
+- **[UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/index.php):** A valuable resource for datasets widely used in machine learning.
+- **[Government Portals](https://data.gov):** Websites such as [data.gov](https://data.gov) and [data.gov.uk](https://data.gov.uk) provide a range of datasets.
+- **[World Bank Open Data](https://data.worldbank.org):** Access to global development data.
+
+## Useful Online Resources
+
+Here are some essential resources to deepen your understanding:
+
+- **[Dataset in R](https://vincentarelbundock.github.io/Rdatasets/articles/data.html):** Datasets from different package with CSV link and documentation
+- **[R for Data Science](https://r4ds.had.co.nz/):** A comprehensive guide covering data import techniques.
+- **[RDocumentation](https://www.rdocumentation.org/):** Detailed documentation on R packages and functions.
+- **[Quick-R](https://www.statmethods.net/):** A quick reference for reading and writing data.
+- **[Tidyverse Blog](https://www.tidyverse.org/blog/):** Articles and tutorials on data science using Tidyverse packages.
+- **[DataCamp](https://www.datacamp.com/):** Online courses on various topics, including data import in R.

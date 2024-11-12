@@ -1,8 +1,10 @@
 ---
 title: Basic Scatter Plot and linear fitted line
 slug: basic-scatter-plot-with-reg-line
-author: therimalaya
+author: TheRimalaya
+draft: true
 date: 2017-03-01
+code-fold: true
 tags:
   - R
   - Statistics
@@ -41,7 +43,7 @@ sumry.lbl <- paste0("R^2: ", round(sumry$r.squared, 2),
                     ", adj R^2: ", round(sumry$adj.r.squared, 2))
 ```
 
-## Plots {.tabset}
+::: panel-tabset
 
 ### Base Graphics {.tab}
 ```{r}
@@ -95,3 +97,5 @@ sumry
 ```
 
 This means, the effect of displacement on mile per gallon of the cars in the model is negative and its magnitude is 0.04. In other words, on one unit change of displacement, the car will travel 0.04 less per gallon.
+
+:::

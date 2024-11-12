@@ -1,8 +1,10 @@
 ---
 title: Scatter plot with multiple group
 slug: scatter-plot-multple-group
-author: Raju Rimal
+draft: true
+author: TheRimalaya
 date: 2016-01-12
+code-fold: true
 tags:
   - Statistics
   - Regression

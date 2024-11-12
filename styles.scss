@@ -4,10 +4,6 @@
 $link-color: #39729E;;
 
 /* css styles */
-a {
-  text-decoration: none;
-}
-
 .huge-cursive {
   font-family: WindSong;
   font-size: 72px;
@@ -367,7 +363,16 @@ div.quarto-about-trestles {
   }
 }
 
-/* gt-table */
+/* Blog styles */
+
+// Title-block
+#title-block-header {
+  .quarto-title-meta {
+    grid-template-columns: repeat(3, 1fr)!important;
+  }
+}
+
+// gt-table
 table.gt_table :is(td, th) {
     color: var(--quarto-body-color)!important;
 }

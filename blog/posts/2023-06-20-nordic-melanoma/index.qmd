@@ -1,10 +1,9 @@
 ---
 title: "Melanoma Incidence in Nordic Countries"
-subtitle: "With special focus on Norway"
 author: "Raju Rimal"
-date: "20 June, 2023"
+date: 2023-06-20
+date-modified: 2024-11-11
 code-overflow: scroll
-date-format: "DD MMMM YYYY"
 bibliography: References.bib
 citations-hover: true
 preview-links: true
@@ -23,15 +22,9 @@ nocite: "@*"
 
 ```{r}
 #| include: false
-pkgs <- c(
-  "ggplot2", "data.table", "purrr", "gt", 
-  "jsonlite", "DT", "segmented"
-)
+pkgs <- c("ggplot2", "gt", "jsonlite", "DT", "segmented", "tidytable")
 for (pkg in pkgs) require(pkg, character.only = TRUE)
-options(
-  digits = 4,
-  scipen = 4
-)
+options(digits = 4, scipen = 4)
 ```
 
 
@@ -69,15 +62,13 @@ label_values <- function(data, label_map, var) {
   return(data)
 }
 
-design <- CJ(
-  sex = 1:2,
-  type = 0:1,
-  cancer = 290,
-  country = c(208, 246, 352, 578, 752)
-)
-design[, url := glue::glue_data(.SD, 
-  "https://gco.iarc.fr/gateway_prod/api/nordcan/v2/92/data/population/{type}/{sex}/({country})/({cancer})/?ages_group=5_17&year_start=1980&year_end=2020&year_grouped=0"
-)]
+design <- do.call(crossing, design_map) %>% 
+  mutate(
+    url = glue::glue( 
+      "https://gco.iarc.fr/gateway_prod/api/nordcan/v2/92/data/population/{type}/{sex}/({country})/({cancer})/?ages_group=5_17&year_start=1980&year_end=2020&year_grouped=0"
+    )
+  )
+
 design <- design %>% 
   label_values(design_map, "sex") %>% 
   label_values(design_map, "type") %>% 
@@ -89,7 +80,6 @@ API URL:
 : `https://gco.iarc.fr/gateway_prod/api/nordcan/v2/92/data/population/{type}/{sex}/({country})/({cancer})/?ages_group=5_17&year_start=1980&year_end=2020&year_grouped=0`
 
 Replacing the placeholders `type` (Incidence: 0, Mortality: 1), `sex` (Male: 1, Female: 2), `country` (Denmark: 208, Finland: 246, Iceland: 352, Norway: 578, and Sweden: 752), and `cancer` (Melanoma: 290) prepare the data API.
-
 
 ```{r}
 #| echo: false
@@ -129,12 +119,13 @@ json_data[0]
 ```{r}
 #| code-summary: Code for data download
 if (!file.exists("Data/nordcan-json.Rds")) {
-  design[, data := map(url, ~read_json(.x) %>% pluck("dataset"))]
+  design[, data := map(url, ~read_json(.x) %>% purrr::pluck("dataset"))]
   saveRDS(design, file = "Data/nordcan-json.Rds")
 } else {
   design <- readRDS("Data/nordcan-json.Rds")
 }
-design[, .(sex, type, country, data)]
+design <- design %>% 
+  tidytable::select(sex, type, country, data)
 ```
 
 ### Data Preparation
@@ -143,18 +134,19 @@ design[, .(sex, type, country, data)]
 #| code-summary: Rate data frame
 rate_df <- design[, map_df(data, function(dta) {
   out <- data.table(
-    year = map_int(dta, "year"),
-    asr_w = map_dbl(dta, "asr"),
-    asr_e = map_dbl(dta, "asr_e"),
-    asr_n = map_dbl(dta, "asr_n"),
-    crude_rate = map_dbl(dta, "crude_rate"),
-    count = map_dbl(dta, "total"),
-    population = map_dbl(dta, "total_pop"),
-    cum_risk = map(dta, "cum_risk") %>% 
+    year = map_int(dta, ~get("year", .x)),
+    asr_w = map_dbl(dta, ~get("asr", .x)),
+    asr_e = map_dbl(dta, ~get("asr_e", .x)),
+    asr_n = map_dbl(dta, ~get("asr_n", .x)),
+    crude_rate = map_dbl(dta, ~get("crude_rate", .x)),
+    count = map_dbl(dta, ~get("total", .x)),
+    population = map_dbl(dta, ~get("total_pop", .x)),
+    cum_risk = map(dta, ~get("cum_risk", .x)) %>% 
       unlist()
   )
   if ("cum_risk" %in% names(out)) {
-    out[, cum_risk := as.numeric(cum_risk)]
+    out <- out %>% 
+      mutate(cum_risk = as.numeric(cum_risk))
   }
   return(out)
 }), by = .(sex, type, country)]
@@ -169,35 +161,35 @@ str(rate_df)
 ```{r}
 #| code-summary: Rate by age
 rate_by_age <- design[, map_df(data, function(dta) {
-  year <- map_int(dta, "year")
-  count_df <- map_df(dta, "ages") %>% 
-    as.data.table() %>%
+  year <- map_int(dta, ~get("year", .x))
+  count_df <- map(dta, ~get("ages", .x)) %>% 
+    map_dfr(as_tidytable) %>% 
     cbind(year = year) %>% 
-    melt.data.table(
-      id.vars = "year",
-      variable.name = "age_group",
-      value.name = "count"
+    pivot_longer(
+      cols = -"year",
+      names_to = "age_group",
+      values_to = "count"
     )
-  pop_df <- map_df(dta, "populations") %>% 
-    as.data.table() %>%
+  pop_df <- map(dta, ~get("populations", .x)) %>% 
+    map_dfr(as_tidytable) %>%
     cbind(year = year) %>% 
-    melt.data.table(
-      id.vars = "year",
-      variable.name = "age_group",
-      value.name = "population"
+    pivot_longer(
+      cols = -"year",
+      names_to = "age_group",
+      values_to = "population"
     )
-  asr_df <- map_df(dta, "age_specific_rate") %>% 
-    modify(as.numeric) %>% 
-    as.data.table() %>%
+  asr_df <- map(dta, ~get("age_specific_rate", .x)) %>% 
+    map_dfr(as_tidytable) %>% 
+    as_tidytable() %>%
     cbind(year = as.numeric(year)) %>% 
-    melt.data.table(
-      id.vars = "year",
-      variable.name = "age_group",
-      value.name = "asr"
+    pivot_longer(
+      cols = -"year",
+      names_to = "age_group",
+      values_to = "asr"
     )
-  out <- reduce(
+  out <- purrr::reduce(
     list(count_df, pop_df, asr_df),
-    merge.data.table,
+    inner_join,
     by = c("year", "age_group")
   )
   age_lbl <- paste(
@@ -207,13 +199,12 @@ rate_by_age <- design[, map_df(data, function(dta) {
   )
   age_lbl[length(age_lbl)] <- "85+"
   names(age_lbl) <- 1:18
-  
-  out[, age_group := age_lbl[age_group]]
-  out[, year := as.integer(year)]
-  out[, count := as.integer(count)]
-  out[, population := as.integer(population)]
-  out[, asr := as.numeric(asr)]
-  return(out[])
+
+  out %>% 
+    mutate(age_group = age_lbl[age_group]) %>% 
+    mutate(asr = as.numeric(asr)) %>% 
+    mutate(across(c(year, count, population), as.integer))
+
 }), by = .(sex, type, country)]
 ```
 
@@ -242,14 +233,16 @@ Additionally, using segmented regression the change points in the trend was iden
 
 ```{r}
 #| code-summary: Data within each strata
-nested_df <- rate_df[, .(
-  data = list(.SD)
-), by = .(sex, type, country)]
+nested_df <- rate_df %>% 
+  nest(data = -c(sex, type, country))
 head(nested_df)
 ```
 
+### Modelling
+
 ::: {.callout-note icon="false"}
-### Poisson regression model
+#### Poisson regression model
+
 ```r
 model <- glm(
   count ~ year + offset(log(population)),
@@ -261,26 +254,34 @@ model <- glm(
 :::
 
 ::: {.callout-note icon="false"}
-### Segmented regression model
+#### Segmented regression model
+
 ```r
 sgmt_model <- segmented(model, npsi = 2)
 ```
 
 :::
 
+
 ```{r}
 #| code-summary: Poisson and segmented fit
 #| warning: false
-fitted_df <- nested_df[, map_df(data, function(dta) {
-  fit <- glm(
-    count ~ year + offset(log(population)),
-    family = poisson(link = "log"),
-    data = dta
-  )
-  sgmt_fit <- segmented(fit, npsi = 2)
+fitted_df <- nested_df %>% 
+  mutate(fit = map(data, function(.data) {
+    glm(
+      count ~ year + offset(log(population)),
+      family = poisson(link = "log"),
+      data = .data
+    )
+  })) %>% 
+  mutate(sgmt_fit = map2(data, fit, function(.data, .fit) {
+    out <- segmented(.fit, seg.Z = ~year, data = .data, npsi = 2)
+    if (!("segmented" %in% class(out))) {
+      out <- segmented(.fit, seg.Z = ~year, data = .data, npsi = 1)
+    }
+    return(out)
+  }))
 
-  data.table(fit = list(fit), sgmt_fit = list(sgmt_fit))
-}), by = .(sex, type, country)]
 head(fitted_df)
 ```
 
@@ -290,15 +291,190 @@ Following plots highlighting Norway and Finland for comparison show a higher mel
 
 ### Crude rate
 
-![](Plots/Line-Nor-Fin.svg)
+```{r}
+#| code-summary: Crude rate plot
+#| fig-asp: 0.9
+cols <- RColorBrewer::brewer.pal(fitted_df[, n_distinct(country)], "Set1") 
+names(cols) <- fitted_df[, unique(country)]
+
+rate_df %>% 
+  filter(country != "Iceland") %>% 
+  ggplot(aes(year, crude_rate, group = country)) +
+  facet_grid(
+    cols = vars(sex),
+    rows = vars(type),
+    scales = "free_y"
+  ) +
+  geom_line(color = "lightgrey") +
+  geom_point(
+    fill = "whitesmoke", 
+    shape = 21, 
+    color = "lightgrey",
+    stroke = 1,
+    size = 1
+  ) +
+  geom_line(
+    data = ~subset(.x, country %in% c("Finland", "Norway")),
+    aes(color = country)
+  ) +
+  ggthemes::theme_few(base_size = 14) +
+  theme(
+    legend.position = "bottom",
+    legend.justification = "left",
+    panel.grid = element_line(color = "#f0f0f0")
+  ) +
+  scale_color_manual(breaks = names(cols), values = cols) +
+  labs(
+    x = "Year of diagnosis",
+    y = "Crude rate per 100,000 person-years",
+    color = "Country"
+  )
+```
+
 
 ### Poisson fit
 
-![](Plots/GLM-Nor-Fin.svg)
+```{r}
+#| label: Fitted values from the model
+#| code-summary: Fitted values from the model
+#| message: false
+#| error: false
+
+fitted_df <- fitted_df %>% 
+  mutate(
+    fit_df = map(
+      fit, 
+      function(.fit) {
+        new_data <- crossing(year = 1980:2020, population = 1e5)
+        tidytable(
+          year = new_data[, year],
+          .fitted = predict(.fit, newdata = new_data, type = "response")
+        )
+      }),
+    sgmt_fit_df = map(
+      sgmt_fit, function(.fit) {
+        new_data <- crossing(year = 1980:2020, population = 1e5)
+        pred_df <- predict(
+          .fit, newdata = new_data,
+          type = "link", interval = "confidence"
+        ) %>% exp() %>% apply(1:2, prod, 1e5) %>% 
+        as_tidytable() %>% 
+        rename_with(~c(".fitted", ".lower", ".upper"))
+        bind_cols(year = new_data[, year], pred_df)
+      })
+  )
+```
+
+```{r}
+#| code-summary: Crude rate with poisson fit
+#| fig-asp: 0.9
+fit_df <- fitted_df %>%
+  unnest(fit_df) %>%
+  filter(country != "Iceland")
+
+plot_poisson <- function(rate_df, fit_df, countries = NULL) {
+  if (is.null(countries)) {
+    countries <- rate_df[, country]
+  }
+  rate_df %>%
+    filter(country != "Iceland") %>%
+    ggplot(aes(year, crude_rate, group = country)) +
+    facet_grid(
+      cols = vars(sex),
+      rows = vars(type),
+      scales = "free_y"
+    ) +
+    geom_line(color = "lightgrey") +
+    geom_point(
+      fill = "whitesmoke",
+      shape = 21,
+      color = "lightgrey",
+      stroke = 1,
+      size = 1
+    ) +
+    geom_line(
+      data = ~ subset(fit_df, country %in% countries),
+      aes(color = country, y = .fitted),
+    ) +
+    ggthemes::theme_few(base_size = 14) +
+    theme(
+      legend.position = "bottom",
+      legend.justification = "left",
+      panel.grid = element_line(color = "#f0f0f0")
+    ) +
+    scale_color_manual(breaks = names(cols), values = cols) +
+    labs(
+      x = "Year of diagnosis",
+      y = "Crude rate per 100,000 person-years",
+      color = "Country"
+    )
+}
+plot_poisson(rate_df, fit_df, c("Finland", "Norway"))
+```
 
 ### Segmented fit
 
-![](Plots/Sgmt-Nor-Fin.svg)
+```{r}
+#| code-summary: Crude rate with poisson fit
+#| fig-asp: 0.9
+plot_segmented <- function(rate_df, fit_df, countries = NULL, show_poisson = T) {
+  sgmt_fit_df <- fitted_df %>% 
+    filter(country != "Iceland") %>% 
+    unnest(sgmt_fit_df)
+
+  if (is.null(countries)) {
+    countries <- rate_df[, unique(country)]
+  } else {
+    sgmt_fit_df <- sgmt_fit_df %>% filter(country %in% countries)
+  }
+
+  plt <- rate_df %>% 
+    filter(country != "Iceland") %>% 
+    ggplot(aes(year, crude_rate, group = country)) +
+    facet_grid(
+      cols = vars(sex),
+      rows = vars(type),
+      scales = "free_y"
+    ) +
+    geom_line(color = "lightgrey") +
+    geom_point(
+      fill = "whitesmoke", 
+      shape = 21, 
+      color = "lightgrey",
+      stroke = 1,
+      size = 1
+    ) +
+    geom_line(
+      data = ~subset(sgmt_fit_df, country %in% countries),
+      aes(color = country, y = .fitted),
+      linetype = if (show_poisson) "dashed" else "solid"
+    ) +
+    ggthemes::theme_few(base_size = 14) +
+    theme(
+      legend.position = "bottom",
+      legend.justification = "left",
+      panel.grid = element_line(color = "#f0f0f0")
+    ) +
+    scale_color_manual(breaks = names(cols), values = cols) +
+    labs(
+      x = "Year of diagnosis",
+      y = "Crude rate per 100,000 person-years",
+      color = "Country"
+    )
+
+    if (show_poisson) {
+      plt <- plt +
+        geom_line(
+          data = ~subset(fit_df, country %in% countries),
+          aes(color = country, y = .fitted),
+          alpha = 0.5
+        )
+    }
+    return(plt)
+}
+plot_segmented(rate_df, fit_df, c("Norway", "Finland"))
+
+```
 
 ### All countries
 
@@ -306,66 +482,159 @@ Following plots highlighting Norway and Finland for comparison show a higher mel
 
 ### Poisson fit
 
-![](Plots/GLM-all.svg)
+```{r}
+#| code-summary: Crude rate with poisson fit for all countries
+#| fig-asp: 0.9
+plot_poisson(rate_df, fit_df)
+```
 
 ### Segmented fit
+
+```{r}
+#| code-summary: Crude rate with poisson fit for all countries
+#| fig-asp: 0.9
+plot_segmented(rate_df, fit_df, show_poisson = FALSE)
+```
 
 ![](Plots/Sgmt-all.svg)
 
 :::
+
 :::
 
-- Norway has higher melanoma incidence and mortality than Finland.
-- Finland has lowest melanoma incidence and mortality in both sexes
-- Norway has highest melanoma mortality followed by Sweden in both sexes
-- Denmark has surpassed both Norway and Sweden in melanoma incidence in the recent years
-- A plateau period was observed in melanoma incidence in Norway.
-- Most countries has raise in melanoma incidence after 2005.
-- A declining melanoma moratlity was observed in all countries in recent years. 
+Here, Norway leads with the highest rates of melanoma incidence and mortality, while Finland shines with the lowest rates across both sexes. Recently, Denmark has surged ahead of Norway and Sweden in terms of melanoma incidence.
 
-
-## Model {.smaller}
+Interestingly, Norway had a plateau in melanoma cases for a while, but most Nordic countries saw a rise in melanoma cases after 2005. The silver lining here is that all countries have experienced a drop in melanoma mortality in recent years, thanks to better detection, treatments, and awareness.
 
 ### Annual percentge change (APC)
 
-![](Plots/model-summary-plot.svg){width="100%"}
-
-### APC within segments
+::: panel-tabset
+#### Plot
 
 ```{r}
-a_apc <- readRDS("Results/APC.Rds")
-apc <- copy(a_apc[[1]])
-aapc <- copy(a_apc[[2]])
-apc[, label_period := glue::glue_data(.SD, "{label}<br>{psi}")]
-apc[, segment := gsub("slope", "", segment)]
+#| fig-asp: 0.5
+tidy_fit <- fitted_df %>% 
+  transmute(tidy_fit = map(fit, function(.fit) {
+    broom::tidy(.fit, exponentiate = TRUE, conf.int = TRUE) %>% 
+      filter(term == "year", country != "Iceland")
+  }), .by = c(sex, type, country)) %>% 
+  unnest()
+
+tidy_fit %>% 
+  mutate(country = factor(country, c(
+    "Finland", "Denmark",
+    "Sweden", "Norway"
+  ))) %>% 
+  ggplot(aes(x = estimate, y = country, color = sex)) +
+  facet_grid(cols = vars(type)) +
+  geom_pointrange(
+    aes(xmin = conf.low, xmax = conf.high),
+    shape = 21,
+    fill = "whitesmoke",
+    position = position_dodge(width = 0.5)
+  ) +
+  geom_vline(xintercept = 1, linetype = 2, color = "grey") +
+  scale_color_brewer(palette = "Set1") +
+  expand_limits(x = 1) +
+  ggthemes::theme_few(base_size = 16) +
+  theme(
+    panel.grid = element_line(color = "#f0f0f0"),
+    legend.position = "bottom",
+    legend.justification = "left"
+  ) +
+  labs(
+    x = "Percentage change in count",
+    y = NULL
+  )
+```
+
+#### Table
+
+```{r}
+#| label: Calculating annual percentage change
+#| code-summary: Calculating annual percentage change
+aapc_df <- fitted_df %>% 
+  transmute(
+    aapc = map(sgmt_fit, function(.fit) {
+      aapc(.fit) %>% 
+        t() %>% 
+        as_tidytable() %>% 
+        rename_with(
+          ~c("estimate", "std_err", "lower", "upper")
+        ) %>% 
+        mutate(psi = "1980--2020") %>% 
+        mutate(
+          label = glue::glue(
+            "{estimate} ({lower}, {upper})",
+            .transformer = \(d, e) round(get(d, e), 2)
+          )
+        )
+    }),
+    apc = map(sgmt_fit, function(fit) {
+      if (!"segmented" %in% class(fit)) return(NULL)
+      out <- slope(fit, APC = TRUE)[[1]] %>% 
+        as_tidytable(.keep_rownames = "segment")
+      psi_start <- unname(c(1980, fit$psi[, "Est."], 2020))
+      psi_end <- lead(psi_start, 1)
+      psi_range <- glue::glue(
+        "{psi_start}--{psi_end}",
+        .transformer = \(d, e) round(get(d, e))
+      )
+      psi_range <- setdiff(psi_range, last(psi_range))
+      out %>% 
+        mutate(psi = psi_range) %>% 
+        rename_with(
+          .fn = ~c("estimate", "lower", "upper"), 
+          .cols = 2:4
+        ) %>% 
+        mutate(label = glue::glue(
+          "{estimate} ({lower}, {upper})",
+          .transformer = \(d, e) round(get(d, e), 2)
+        )) %>% 
+        mutate(label_period = glue::glue("{label}<br>{psi}")) %>% 
+        mutate(segment = gsub("slope", "", segment))
+    }),
+    .by = c(sex, type, country)
+  )
+
+apc <- aapc_df %>% unnest("apc")
+aapc <- aapc_df %>% unnest("aapc")
+
 ```
 
 ```{r}
-apc[country %in% c("Norway", "Denmark")] %>% 
-  dcast.data.table(
-  country + segment ~ type + sex,
-  value.var = "label_period"
-) %>% gt::gt(
-  id = "apc-table",
-  rowname_col = "segment",
-  groupname_col = "country"
-) %>% gt::tab_spanner_delim("_") %>% 
+#| label: Table data for APC
+#| code-summary: Table data for APC
+apc %>% 
+  filter(country %in% c("Norway", "Denmark")) %>% 
+  pivot_wider(
+    id_cols = c(country, segment),
+    names_from = c(type, sex),
+    values_from = "label_period"
+  ) %>% 
+  gt::gt(
+    id = "apc-table",
+    rowname_col = "segment",
+    groupname_col = "country"
+  ) %>% 
+  gt::tab_spanner_delim("_") %>% 
   gt::fmt_markdown(everything()) %>% 
   gt::sub_missing(everything(), missing_text = "-") %>%
   gt::tab_stubhead("Segment") %>% 
   gt::tab_options(
-    data_row.padding = "0px",
     table.width = "100%",
-    table.font.size = "small",
     column_labels.font.weight = "bold",
     row_group.font.weight = "bold"
   )
 ```
 
-## Model {.smaller}
+:::
 
-**Incidence model:**
+### Comparing countries
 
+::: panel-tabset
+
+#### Incidence
 ```{r}
 #| echo: true
 #| code-fold: show
@@ -376,10 +645,13 @@ mdl_inc <- glm(
   family = poisson(link = "log"),
   subset = type == "Incidence"
 )
+
+broom::tidy(mdl_inc, conf.int = TRUE, exponentiate = TRUE) %>% 
+  mutate(across(c(2:4, 6:7), round, 3))
 ```
 
-**Mortality model**
 
+#### Mortality
 ```{r}
 #| echo: true
 #| code-fold: show
@@ -390,29 +662,18 @@ mdl_mor <- glm(
   family = poisson(link = "log"),
   subset = type == "Mortality"
 )
-```
 
-### Incidence model summary
-```{r, prompt=FALSE, comment = ""}
-#| echo: true
-broom::tidy(mdl_inc, conf.int = TRUE, exponentiate = TRUE) %>% 
-  modify_at(c(2:4, 6:7), round, 3)
-```
-
-### Mortality model summary
-```{r, prompt=FALSE, comment = ""}
-#| echo: true
 broom::tidy(mdl_mor, conf.int = TRUE, exponentiate = TRUE) %>% 
-  modify_at(c(2:4, 6:7), round, 3)
+  mutate(across(c(2:4, 6:7), round, 3))
 ```
 
+:::
 
 ## Summary 
 
-- Melanoma incidence and moratlity is increasing in all countries
-- Norway has highest mortality rate through out the period and has highest increase in both incidence and mortality.
-- Melanoma incidence increased rapidly in Denmark between 2002 and 2011 in women and 2004-2009 in men surpassing Norway.
-- Mortality is decreasing in all countries in recent period.
+In summary, melanoma trends across the Nordic countries reveal some concerning patterns. Incidence and mortality have been increasing in all countries, with Norway showing the highest mortality rate and the most substantial rise in both incidence and mortality. Denmark saw a particularly rapid increase in melanoma cases between 2002 and 2011 in women and between 2004 and 2009 in men, surpassing Norway during those periods.
+
+However, there is a silver lining: recent years have shown a decrease in melanoma mortality rates across all the Nordic countries. This positive trend suggests that advancements in medical treatments, early detection efforts, and greater public awareness are starting to make a difference. While the rise in incidence remains a challenge, the declining mortality rates provide a hopeful perspective moving forward.
 
 ## References
 

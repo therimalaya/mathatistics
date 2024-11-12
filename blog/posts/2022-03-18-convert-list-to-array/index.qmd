@@ -3,6 +3,8 @@ title  : Convert list of array/matrix into an array in R
 slug   : convert-list-of-array-matrix-into-an-array-in-r
 author : therimalaya
 date   : 2022-03-18
+date-modified: 2024-10-09
+draft: true
 categories:
   - R
 tags:

@@ -2,7 +2,8 @@
 title: LaTeX autocompletion in RStudio
 descripion: LaTeX autocompletion or any autocompletion can be triggred in RStudio
 slug: latex-autocomplete-rstudio
-author: therimalaya
+author: TheRimalaya
+draft: true
 type: post
 date: 2016-02-25
 categories:
@@ -19,9 +20,13 @@ tags:
 
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(comment = NA, fig.height = 6,
-                      fig.align = 'center',
-                      warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(
+  comment = NA,
+  fig.height = 6,
+  fig.align = "center",
+  warning = FALSE, 
+  message = FALSE
+)
 ```
 
 

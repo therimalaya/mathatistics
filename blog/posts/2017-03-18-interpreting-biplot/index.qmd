@@ -1,17 +1,20 @@
 ---
-title  : Interpreting Biplot
-slug   : interpreting-biplot
-author : therimalaya
-date   : 2017-03-18
+title  : Interpretating Biplot
+subtitle: A tool for exploring multivariate data
+slug   : interpretation-biplot
+author : TheRimalaya
+date: 2017-03-18
+date-modified: 2024-10-06
 code-fold: true
 categories:
   - statistics
   - machine learning
-  - mathematics
+  - data science
 tags:
-  - biplot
-  - interpretation of biplot
   - pca
+  - biplot
+  - exploring data
+  - interpretation of biplot
 ---
 
 ```{r setup, include = FALSE}
@@ -176,32 +179,34 @@ Here we see that more than 87% of variation in $\mathbf{X}$ was captured by firs
 
 :::
 
+## Explore data using biplot
+
 Now lets compare the scores from the first two components, observations and variables in the data matrix. From the `USArrests` data, lets look at the top five states with highest and lowest arrest for each of these crimes.
 
 ::: panel-tabset
-## States with highest arrests
+### States with highest arrests
 
 ::: panel-tabset
 
-### Murder
+#### Murder
 
 ```{r}
 USArrests %>% arrange(-Murder) %>% top_n()
 ```
 
-### Assault
+#### Assault
 
 ```{r}
 USArrests %>% arrange(-Assault) %>% top_n()
 ```
 
-### UrbanPop
+#### UrbanPop
 
 ```{r}
 USArrests %>% arrange(-UrbanPop) %>% top_n()
 ```
 
-### Rape
+#### Rape
 
 ```{r}
 USArrests %>% arrange(-Rape) %>% top_n()
@@ -210,29 +215,29 @@ USArrests %>% arrange(-Rape) %>% top_n()
 
 :::
 
-## States with lowest arrests
+### States with lowest arrests
 
 ::: panel-tabset
 
-### Murder
+#### Murder
 
 ```{r}
 USArrests %>% arrange(Murder) %>% top_n()
 ```
 
-### Assault
+#### Assault
 
 ```{r}
 USArrests %>% arrange(Assault) %>% top_n()
 ```
 
-### UrbanPop
+#### UrbanPop
 
 ```{r}
 USArrests %>% arrange(UrbanPop) %>% top_n()
 ```
 
-### Rape
+#### Rape
 
 ```{r}
 USArrests %>% arrange(Rape) %>% top_n()
